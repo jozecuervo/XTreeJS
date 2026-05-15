@@ -1,0 +1,40 @@
+{
+  "name": "xtreejs",
+  "version": "0.1.0",
+  "description": "Modern revival of the classic DOS-era XTree file manager (1985–1995)",
+  "packageManager": "bun@1.3.8",
+  "engines": {
+    "bun": ">=1.3.8"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jozecuervo/XTreeJS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jozecuervo/XTreeJS/issues"
+  },
+  "homepage": "https://github.com/jozecuervo/XTreeJS#readme",
+  "keywords": [
+    "xtree",
+    "file-manager",
+    "tui",
+    "terminal",
+    "bun"
+  ],
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "release:check": "\"$npm_execpath\" run scripts/release.ts check",
+    "release:notes": "\"$npm_execpath\" run scripts/release.ts notes"
+  },
+  "dependencies": {
+    "neo-blessed": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "bun": "^1.2.0",
+    "bun-types": "^1.2.0"
+  }
+}

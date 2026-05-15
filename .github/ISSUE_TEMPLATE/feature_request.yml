@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a product or workflow improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What user or workflow problem are you trying to solve?
+      placeholder: The current behavior makes it hard to...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the desired behavior.
+      placeholder: Add support for...
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and risks
+      description: What tradeoffs, edge cases, or compatibility risks should be considered?
+      placeholder: Risks include...
+    validations:
+      required: false
