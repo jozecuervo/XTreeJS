@@ -1,32 +1,55 @@
-// XTree Pro Gold 1.44 color scheme — yellow on blue
+// XTree-inspired gold on royal blue palette.
+export const Palette = {
+  royalBlue: '#0000c8',
+  royalBlueDeep: '#0000bf',
+  gold: '#d4af37',
+  brightGold: '#ffd700',
+  mutedGold: '#a9822a',
+  cream: '#fff2a8',
+} as const;
+
 export const Colors = {
-  // File type colors (all yellow-on-blue like the original)
-  directory: 'yellow',
-  executable: 'white',
-  hidden: 'cyan',
-  symlink: 'cyan',
-  default: 'yellow',
+  // File type colors (gold variants on royal blue)
+  directory: Palette.brightGold,
+  executable: Palette.cream,
+  hidden: Palette.mutedGold,
+  symlink: Palette.cream,
+  default: Palette.gold,
 
   // UI colors
-  bg: 'blue',
-  border: 'yellow',
-  borderFocused: 'white',
-  statusBarBg: 'blue',
-  statusBarFg: 'yellow',
-  selectionBg: 'cyan',
-  selectionFg: 'blue',
-  taggedBg: 'white',
-  taggedFg: 'blue',
-  treeLine: 'yellow',
-  titleFg: 'yellow',
-  titleBg: 'blue',
-  promptBg: 'blue',
-  promptFg: 'yellow',
-  errorFg: 'white',
+  bg: Palette.royalBlue,
+  border: Palette.gold,
+  borderFocused: Palette.brightGold,
+  statusBarBg: Palette.royalBlueDeep,
+  statusBarFg: Palette.brightGold,
+  selectionBg: Palette.gold,
+  selectionFg: Palette.royalBlue,
+  taggedBg: Palette.brightGold,
+  taggedFg: Palette.royalBlue,
+  treeLine: Palette.gold,
+  titleFg: Palette.brightGold,
+  titleBg: Palette.royalBlue,
+  promptBg: Palette.royalBlueDeep,
+  promptFg: Palette.brightGold,
+  inputBg: Palette.royalBlue,
+  inputFg: Palette.brightGold,
+  errorFg: Palette.brightGold,
   // Stats/labels on right panel
-  labelFg: 'yellow',
-  valueFg: 'white',
+  labelFg: Palette.gold,
+  valueFg: Palette.brightGold,
 } as const;
+
+export function fg(text: string, color: string = Colors.default): string {
+  return `{${color}-fg}${text}{/}`;
+}
+
+export function bgFg(
+  text: string,
+  bg: string = Colors.bg,
+  color: string = Colors.default
+): string {
+  return `{${bg}-bg}{${color}-fg}${text}{/}`;
+}
 
 // Tree drawing characters (DOS-style)
 export const TreeChars = {

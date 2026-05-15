@@ -2,24 +2,24 @@ import { describe, expect, test } from 'bun:test';
 import { Colors, TreeChars, Defaults } from '../../src/config/defaults.js';
 
 describe('Colors', () => {
-  test('has XTree Pro Gold file type colors', () => {
-    expect(Colors.directory).toBe('yellow');
-    expect(Colors.executable).toBe('white');
-    expect(Colors.hidden).toBe('cyan');
-    expect(Colors.symlink).toBe('cyan');
-    expect(Colors.default).toBe('yellow');
+  test('has gold-on-royal file type colors', () => {
+    expect(Colors.directory).toBe('#ffd700');
+    expect(Colors.executable).toBe('#fff2a8');
+    expect(Colors.hidden).toBe('#a9822a');
+    expect(Colors.symlink).toBe('#fff2a8');
+    expect(Colors.default).toBe('#d4af37');
   });
 
-  test('has XTree Pro Gold UI colors', () => {
-    expect(Colors.bg).toBe('blue');
-    expect(Colors.statusBarBg).toBe('blue');
-    expect(Colors.statusBarFg).toBe('yellow');
-    expect(Colors.selectionBg).toBe('cyan');
-    expect(Colors.selectionFg).toBe('blue');
-    expect(Colors.taggedBg).toBe('white');
-    expect(Colors.taggedFg).toBe('blue');
-    expect(Colors.border).toBe('yellow');
-    expect(Colors.borderFocused).toBe('white');
+  test('has gold-on-royal UI colors', () => {
+    expect(Colors.bg).toBe('#0000c8');
+    expect(Colors.statusBarBg).toBe('#0000bf');
+    expect(Colors.statusBarFg).toBe('#ffd700');
+    expect(Colors.selectionBg).toBe('#d4af37');
+    expect(Colors.selectionFg).toBe('#0000c8');
+    expect(Colors.taggedBg).toBe('#ffd700');
+    expect(Colors.taggedFg).toBe('#0000c8');
+    expect(Colors.border).toBe('#d4af37');
+    expect(Colors.borderFocused).toBe('#ffd700');
   });
 });
 

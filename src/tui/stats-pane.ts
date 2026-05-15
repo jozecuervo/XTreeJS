@@ -1,5 +1,5 @@
 import blessed from 'neo-blessed';
-import { Colors } from '../config/defaults.js';
+import { Colors, fg } from '../config/defaults.js';
 import type { DiskStats } from '../fs/disk-stats.js';
 import { formatStatsSize } from '../fs/dir-stats.js';
 import * as path from 'path';
@@ -51,9 +51,6 @@ export function createStatsPane(screen: blessed.Widgets.Screen): StatsPane {
   }
 
   function refresh(data: StatsData): void {
-    const labelC = Colors.labelFg;
-    const valC = Colors.valueFg;
-
     const diskName = data.diskStats?.device || 'unknown';
     const diskMount = data.diskStats?.mountpoint || '/';
     const available = data.diskStats?.available || '?';
@@ -62,26 +59,26 @@ export function createStatsPane(screen: blessed.Widgets.Screen): StatsPane {
 
     const lines = [
       '',
-      `  {${labelC}-fg}FILE  {/${labelC}-fg}{${valC}-fg}${data.filespec}{/${valC}-fg}`,
+      `  ${fg('FILE  ', Colors.labelFg)}${fg(data.filespec, Colors.valueFg)}`,
       '',
-      `  {${labelC}-fg}DISK{/${labelC}-fg}  {${valC}-fg}${diskMount}{/${valC}-fg}`,
-      `    {${labelC}-fg}Available{/${labelC}-fg}`,
-      `      {${valC}-fg}${available}{/${valC}-fg}`,
+      `  ${fg('DISK', Colors.labelFg)}  ${fg(diskMount, Colors.valueFg)}`,
+      `    ${fg('Available', Colors.labelFg)}`,
+      `      ${fg(available, Colors.valueFg)}`,
       '',
-      `  {${labelC}-fg}DISK Statistics{/${labelC}-fg}`,
-      `    {${labelC}-fg}Total{/${labelC}-fg}`,
-      `      {${labelC}-fg}Files:{/${labelC}-fg}  {${valC}-fg}${formatNumber(data.totalFiles)}{/${valC}-fg}`,
-      `      {${labelC}-fg}Bytes:{/${labelC}-fg}  {${valC}-fg}${formatNumber(data.totalBytes)}{/${valC}-fg}`,
-      `    {${labelC}-fg}Matching{/${labelC}-fg}`,
-      `      {${labelC}-fg}Files:{/${labelC}-fg}  {${valC}-fg}${formatNumber(data.matchingFiles)}{/${valC}-fg}`,
-      `      {${labelC}-fg}Bytes:{/${labelC}-fg}  {${valC}-fg}${formatNumber(data.matchingBytes)}{/${valC}-fg}`,
-      `    {${labelC}-fg}Tagged{/${labelC}-fg}`,
-      `      {${labelC}-fg}Files:{/${labelC}-fg}  {${valC}-fg}${formatNumber(data.taggedFiles)}{/${valC}-fg}`,
-      `      {${labelC}-fg}Bytes:{/${labelC}-fg}  {${valC}-fg}${formatNumber(data.taggedBytes)}{/${valC}-fg}`,
+      `  ${fg('DISK Statistics', Colors.labelFg)}`,
+      `    ${fg('Total', Colors.labelFg)}`,
+      `      ${fg('Files:', Colors.labelFg)}  ${fg(formatNumber(data.totalFiles), Colors.valueFg)}`,
+      `      ${fg('Bytes:', Colors.labelFg)}  ${fg(formatNumber(data.totalBytes), Colors.valueFg)}`,
+      `    ${fg('Matching', Colors.labelFg)}`,
+      `      ${fg('Files:', Colors.labelFg)}  ${fg(formatNumber(data.matchingFiles), Colors.valueFg)}`,
+      `      ${fg('Bytes:', Colors.labelFg)}  ${fg(formatNumber(data.matchingBytes), Colors.valueFg)}`,
+      `    ${fg('Tagged', Colors.labelFg)}`,
+      `      ${fg('Files:', Colors.labelFg)}  ${fg(formatNumber(data.taggedFiles), Colors.valueFg)}`,
+      `      ${fg('Bytes:', Colors.labelFg)}  ${fg(formatNumber(data.taggedBytes), Colors.valueFg)}`,
       '',
-      `  {${labelC}-fg}Current Directory{/${labelC}-fg}`,
-      `    {${valC}-fg}${data.currentDirName}{/${valC}-fg}`,
-      `      {${labelC}-fg}Files:{/${labelC}-fg}  {${valC}-fg}${formatNumber(data.currentDirFiles)}{/${valC}-fg}`,
+      `  ${fg('Current Directory', Colors.labelFg)}`,
+      `    ${fg(data.currentDirName, Colors.valueFg)}`,
+      `      ${fg('Files:', Colors.labelFg)}  ${fg(formatNumber(data.currentDirFiles), Colors.valueFg)}`,
     ];
 
     widget.setContent(lines.join('\n'));

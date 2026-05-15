@@ -20,7 +20,7 @@ Updated based on the original XTree / XTreePro Gold / XTreeGold manual reference
 - [x] File viewer with bat syntax highlighting (F3/v)
 - [x] Image preview via chafa in viewer
 - [x] Arrow key navigation, Enter/Backspace directory traversal
-- [x] XTree Pro Gold 1.44 color scheme (yellow on blue)
+- [x] XTree-inspired gold on royal blue color scheme
 - [x] Confirmation dialogs (delete, prune with double-confirm)
 
 ---

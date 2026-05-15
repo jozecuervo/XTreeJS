@@ -1,5 +1,5 @@
 import blessed from 'neo-blessed';
-import { Colors, TreeChars } from '../config/defaults.js';
+import { Colors, fg, TreeChars } from '../config/defaults.js';
 import type { TreeNode } from '../state/tree-state.js';
 import { getCachedDirStats, formatStatsSize } from '../fs/dir-stats.js';
 
@@ -64,10 +64,10 @@ export function createTreePane(screen: blessed.Widgets.Screen): TreePane {
     let statsStr = '';
     if (stats) {
       const sizeStr = formatStatsSize(stats.totalSize);
-      statsStr = `  {white-fg}${stats.fileCount} files  ${sizeStr}{/white-fg}`;
+      statsStr = `  ${fg(`${stats.fileCount} files  ${sizeStr}`, Colors.valueFg)}`;
     }
 
-    return `${indent}${prefix}{${color}-fg}${expandIcon} ${name}{/${color}-fg}${statsStr}`;
+    return `${indent}${prefix}${fg(`${expandIcon} ${name}`, color)}${statsStr}`;
   }
 
   function refresh(nodes: TreeNode[], currentPath: string): void {

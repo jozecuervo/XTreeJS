@@ -1,5 +1,5 @@
 import blessed from 'neo-blessed';
-import { Colors } from '../config/defaults.js';
+import { Colors, fg } from '../config/defaults.js';
 import type { FileAttributes } from '../fs/operations.js';
 
 // Prompt history keyed by prompt type
@@ -66,8 +66,8 @@ export function showPrompt(
       right: 1,
       height: 1,
       style: {
-        bg: 'black',
-        fg: 'white',
+        bg: Colors.inputBg,
+        fg: Colors.inputFg,
       },
       inputOnFocus: true,
     } as any);
@@ -155,7 +155,7 @@ export function showConfirm(
       },
       label: ' Confirm ',
       tags: true,
-      content: `\n ${message}\n\n {white-fg}y{/white-fg} = Yes   {white-fg}n{/white-fg}/{white-fg}Esc{/white-fg} = No`,
+      content: `\n ${message}\n\n ${fg('y', Colors.valueFg)} = Yes   ${fg('n', Colors.valueFg)}/${fg('Esc', Colors.valueFg)} = No`,
     });
 
     screen.render();
@@ -195,7 +195,7 @@ export function showAttributes(
       `  Modified:     ${attrs.mtime.toLocaleString()}`,
       `  Accessed:     ${attrs.atime.toLocaleString()}`,
       '',
-      '  {white-fg}c{/white-fg} = Change permissions   {white-fg}Esc{/white-fg} = Close',
+      `  ${fg('c', Colors.valueFg)} = Change permissions   ${fg('Esc', Colors.valueFg)} = Close`,
     ].join('\n');
 
     const box = blessed.box({

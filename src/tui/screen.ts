@@ -12,11 +12,11 @@ export function createScreen(): blessed.Widgets.Screen {
       artificial: true,
       shape: 'block',
       blink: true,
-      color: 'yellow',
+      color: Colors.valueFg,
     },
   });
 
-  // Fill entire screen with blue background
+  // Fill entire screen with royal blue background
   blessed.box({
     parent: screen,
     top: 0,

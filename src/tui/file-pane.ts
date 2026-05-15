@@ -1,5 +1,5 @@
 import blessed from 'neo-blessed';
-import { Colors } from '../config/defaults.js';
+import { bgFg, Colors, fg } from '../config/defaults.js';
 import type { FileEntry } from '../fs/list.js';
 import type { DisplayMode, ListingMode } from '../state/app-state.js';
 
@@ -66,9 +66,9 @@ export function createFilePane(screen: blessed.Widgets.Screen): FilePane {
 
   function formatEntry(entry: FileEntry, isTagged: boolean): string {
     const color = colorForEntry(entry);
-    const prefix = isTagged ? '{white-bg}{blue-fg}*{/blue-fg}{/white-bg} ' : '  ';
+    const prefix = isTagged ? `${bgFg('*', Colors.taggedBg, Colors.taggedFg)} ` : '  ';
     const typeIndicator = entry.isDirectory
-      ? '{white-fg}<DIR>{/white-fg}'
+      ? fg('<DIR>', Colors.valueFg)
       : formatSize(entry.size);
     const date = formatDate(entry.mtime);
     const name = entry.name + (entry.isDirectory ? '/' : '');
@@ -76,7 +76,7 @@ export function createFilePane(screen: blessed.Widgets.Screen): FilePane {
     // Pad name to 30 chars for alignment
     const paddedName = name.length > 35 ? name.slice(0, 34) + '~' : name;
 
-    return `${prefix}{${color}-fg}${paddedName}{/${color}-fg}  ${typeIndicator.padStart(8)}  ${date}`;
+    return `${prefix}${fg(paddedName, color)}  ${typeIndicator.padStart(8)}  ${date}`;
   }
 
   function refresh(entries: FileEntry[], taggedPaths: Set<string>): void {

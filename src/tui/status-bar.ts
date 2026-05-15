@@ -1,5 +1,5 @@
 import blessed from 'neo-blessed';
-import { Colors } from '../config/defaults.js';
+import { Colors, fg } from '../config/defaults.js';
 import type { SortOrder, SortDirection, ListingMode } from '../state/app-state.js';
 
 export interface StatusBar {
@@ -77,12 +77,12 @@ export function createStatusBar(screen: blessed.Widgets.Screen): StatusBar {
     showTaggedOnly: boolean = false
   ): void {
     const modePrefix = listingMode === 'branch'
-      ? '{white-fg}BRANCH:{/white-fg} '
+      ? `${fg('BRANCH:', Colors.valueFg)} `
       : listingMode === 'showall'
-        ? '{white-fg}SHOWALL:{/white-fg} '
+        ? `${fg('SHOWALL:', Colors.valueFg)} `
         : '';
-    const taggedOnlyLabel = showTaggedOnly ? '  {white-fg}TAGGED{/white-fg}' : '';
-    const tagInfo = tagCount > 0 ? `  {white-fg}${tagCount} tagged{/white-fg}` : '';
+    const taggedOnlyLabel = showTaggedOnly ? `  ${fg('TAGGED', Colors.valueFg)}` : '';
+    const tagInfo = tagCount > 0 ? `  ${fg(`${tagCount} tagged`, Colors.valueFg)}` : '';
     const arrow = sortDirection === 'asc' ? '^' : 'v';
     const sortInfo = `  Sort: ${SORT_LABELS[sortOrder]} ${arrow}`;
     const filterInfo = filespecFilter !== '*' ? `  Filter: ${filespecFilter}` : '';

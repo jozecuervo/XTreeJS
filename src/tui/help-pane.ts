@@ -1,5 +1,5 @@
 import blessed from 'neo-blessed';
-import { Colors } from '../config/defaults.js';
+import { Colors, fg } from '../config/defaults.js';
 
 type HelpContext = 'files' | 'tree' | 'viewer';
 
@@ -101,7 +101,7 @@ function formatHelp(entries: HelpEntry[], width: number): string[] {
   const lines: string[] = [];
   for (const entry of entries) {
     const key = entry.key.padEnd(keyWidth);
-    lines.push(`  {white-fg}${key}{/white-fg} ${entry.description}`);
+    lines.push(`  ${fg(key, Colors.valueFg)} ${entry.description}`);
   }
   return lines;
 }
@@ -137,7 +137,7 @@ export function showHelp(
         ch: '█',
         style: { fg: Colors.border },
       },
-      content: `\n${content}\n\n  {cyan-fg}Press q, Esc, or ? to close{/cyan-fg}`,
+      content: `\n${content}\n\n  ${fg('Press q, Esc, or ? to close', Colors.valueFg)}`,
     });
 
     screen.render();
@@ -167,44 +167,44 @@ export function showQuickRef(
   return new Promise((resolve) => {
     const lines = [
       '',
-      '  {white-fg}XTreeJS Quick Reference{/white-fg}',
+      `  ${fg('XTreeJS Quick Reference', Colors.valueFg)}`,
       '',
-      '  {cyan-fg}Navigation{/cyan-fg}',
+      `  ${fg('Navigation', Colors.valueFg)}`,
       '  ↑↓/jk  Move cursor    ←→/hl  Back/Enter     Tab  Switch pane',
       '  Home/End  First/Last   PgUp/PgDn  Page        \\  Root dir',
       '',
-      '  {cyan-fg}File Operations{/cyan-fg}',
+      `  ${fg('File Operations', Colors.valueFg)}`,
       '  c/F5  Copy     m/F6  Move      d/F7  Delete     F8  Prune',
       '  n/r   Rename   e/F4  Editor    a  Attributes',
       '',
-      '  {cyan-fg}Tagging{/cyan-fg}',
+      `  ${fg('Tagging', Colors.valueFg)}`,
       '  t  Tag       T  Tag all      u  Untag      U  Untag all',
       '  i  Invert    Ctrl+i  Invert all',
       '  +  Tag spec  -  Untag spec   Ctrl+T  Tag tree  Ctrl+U  Untag tree',
       '  Ctrl+G  Show tagged only     Ctrl+N  Pattern rename',
       '',
-      '  {cyan-fg}Sort & Filter{/cyan-fg}',
+      `  ${fg('Sort & Filter', Colors.valueFg)}`,
       '  s  Sort      S  Direction    f  Filespec    Ctrl+f  Toggle filter',
       '',
-      '  {cyan-fg}Branch & Showall{/cyan-fg}',
+      `  ${fg('Branch & Showall', Colors.valueFg)}`,
       '  b  Branch mode (recursive)   s  Showall (in tree pane)',
       '  \\  Jump to file parent (in branch/showall)',
       '',
-      '  {cyan-fg}Viewer{/cyan-fg}',
+      `  ${fg('Viewer', Colors.valueFg)}`,
       '  F3/v  View   h  Hex  a  ASCII  j  Junk  s  Search  w  Wrap',
       '  f  Follow/tail mode           g  Gather/copy text',
       '',
-      '  {cyan-fg}Prompts{/cyan-fg}',
+      `  ${fg('Prompts', Colors.valueFg)}`,
       '  Up/Down  History recall        F3  Paste last response',
       '  Ctrl+Bksp  Clear line',
       '',
-      '  {cyan-fg}Tree{/cyan-fg}',
+      `  ${fg('Tree', Colors.valueFg)}`,
       '  +  Expand    -  Collapse     *  Toggle      `  Next sibling',
       '  Right  Deep-dive             m  MkDir (tree focus)',
       '',
       '  F1/?  Help   F2  Refresh     F10  This card   q/x  Quit',
       '',
-      '  {cyan-fg}Press any key to close{/cyan-fg}',
+      `  ${fg('Press any key to close', Colors.valueFg)}`,
     ];
 
     const box = blessed.box({

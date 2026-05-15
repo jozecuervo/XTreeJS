@@ -1,5 +1,5 @@
 import blessed from 'neo-blessed';
-import { Colors } from '../config/defaults.js';
+import { bgFg, Colors, fg } from '../config/defaults.js';
 import type { AppState, ViewerMode } from '../state/app-state.js';
 import {
   viewFile, viewFileHex, viewFileAscii, viewFileJunk,
@@ -99,7 +99,7 @@ export function createViewerPane(
       // Highlight search matches
       if (searchQuery && searchMatches.includes(lineIdx)) {
         const isCurrentMatch = searchMatches[currentMatchIdx] === lineIdx;
-        const hlColor = isCurrentMatch ? 'white-bg}{blue-fg' : 'cyan-bg}{blue-fg';
+        const highlightBg = isCurrentMatch ? Colors.taggedBg : Colors.selectionBg;
         const lowerLine = displayLine.toLowerCase();
         const lowerQuery = searchQuery.toLowerCase();
         let result = '';
@@ -111,7 +111,11 @@ export function createViewerPane(
             break;
           }
           result += displayLine.slice(pos, idx);
-          result += `{${hlColor}}${displayLine.slice(idx, idx + searchQuery.length)}{/${hlColor}}`;
+          result += bgFg(
+            displayLine.slice(idx, idx + searchQuery.length),
+            highlightBg,
+            Colors.selectionFg
+          );
           pos = idx + searchQuery.length;
         }
         displayLine = result;
@@ -123,14 +127,14 @@ export function createViewerPane(
           const start = Math.min(vs.gatherStart, vs.gatherEnd);
           const end = Math.max(vs.gatherStart, vs.gatherEnd);
           if (lineIdx >= start && lineIdx <= end) {
-            return `{green-bg}{black-fg}${lineNum} ${displayLine}{/black-fg}{/green-bg}`;
+            return bgFg(`${lineNum} ${displayLine}`, Colors.selectionBg, Colors.selectionFg);
           }
         } else if (lineIdx >= vs.gatherStart && lineIdx <= scrollPos + height - 1) {
           // Show from gatherStart to current position as tentative highlight
         }
       }
 
-      return `{cyan-fg}${lineNum}{/cyan-fg} ${displayLine}`;
+      return `${fg(lineNum, Colors.valueFg)} ${displayLine}`;
     });
 
     viewerBox.setContent(numbered.join('\n'));
@@ -145,9 +149,9 @@ export function createViewerPane(
           : `${(size / (1024 * 1024)).toFixed(1)}M`;
     const modeLabel = vs ? MODE_LABELS[vs.viewerMode] : 'Text';
     const wrapLabel = vs?.wordWrap ? ' Wrap' : '';
-    const followLabel = vs?.followMode ? ' {white-fg}FOLLOW{/white-fg}' : '';
+    const followLabel = vs?.followMode ? ` ${fg('FOLLOW', Colors.valueFg)}` : '';
     const gatherLabel = vs?.gatherStart !== null && vs?.gatherStart !== undefined
-      ? `  {green-fg}GATHER from line ${vs.gatherStart + 1}{/green-fg}`
+      ? `  ${fg(`GATHER from line ${vs.gatherStart + 1}`, Colors.valueFg)}`
       : '';
     const searchInfo = searchMatches.length > 0
       ? `  [${currentMatchIdx + 1}/${searchMatches.length}]`
