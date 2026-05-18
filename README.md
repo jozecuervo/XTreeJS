@@ -1,6 +1,18 @@
 # XTreeJS
 
-Modern revival of the classic DOS-era XTree file manager (1985-1995), built with Bun + TypeScript + neo-blessed.
+<p align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/Xtreegold-3.0.png/330px-Xtreegold-3.0.png" alt="XTreeGold 3.0 screenshot" width="520">
+</p>
+
+<p align="center">
+  <em>XTreeGold 3.0 screenshot via <a href="https://en.wikipedia.org/wiki/XTree">Wikipedia</a>.</em>
+</p>
+
+XTreeJS is a modern, keyboard-first revival of the classic DOS-era XTree/XTreeGold file manager (1985-1995), built with Bun + TypeScript + neo-blessed.
+
+This project exists because some software stays with you. XTreeGold was fast, direct, and opinionated in the best way: a small program that made a whole filesystem feel visible and alive. XTreeJS is a port and love letter, built for the joy of software and programming as much as for daily use.
+
+The goal is to keep the spirit and interaction model recognizable while making it useful in modern terminals. Contributions are welcome: help improve it, test it on real systems, and keep it true to form as a living port of the DOS classic.
 
 ## Status
 
