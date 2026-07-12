@@ -199,7 +199,6 @@ async function main() {
       const targets = getOperationTargets(state);
       if (targets.length === 0) return;
 
-      const names = targets.map((t) => t.name).join(', ');
       const dest = await showPrompt(
         screen,
         `Copy ${targets.length} item(s) to:`,
