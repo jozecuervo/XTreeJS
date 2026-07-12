@@ -2,7 +2,6 @@ import blessed from 'neo-blessed';
 import { Colors, fg } from '../config/defaults.js';
 import type { DiskStats } from '../fs/disk-stats.js';
 import { formatStatsSize } from '../fs/dir-stats.js';
-import * as path from 'path';
 
 export interface StatsData {
   filespec: string;
@@ -68,13 +67,13 @@ export function createStatsPane(screen: blessed.Widgets.Screen): StatsPane {
       `  ${fg('DISK Statistics', Colors.labelFg)}`,
       `    ${fg('Total', Colors.labelFg)}`,
       `      ${fg('Files:', Colors.labelFg)}  ${fg(formatNumber(data.totalFiles), Colors.valueFg)}`,
-      `      ${fg('Bytes:', Colors.labelFg)}  ${fg(formatNumber(data.totalBytes), Colors.valueFg)}`,
+      `      ${fg('Bytes:', Colors.labelFg)}  ${fg(formatStatsSize(data.totalBytes), Colors.valueFg)}`,
       `    ${fg('Matching', Colors.labelFg)}`,
       `      ${fg('Files:', Colors.labelFg)}  ${fg(formatNumber(data.matchingFiles), Colors.valueFg)}`,
-      `      ${fg('Bytes:', Colors.labelFg)}  ${fg(formatNumber(data.matchingBytes), Colors.valueFg)}`,
+      `      ${fg('Bytes:', Colors.labelFg)}  ${fg(formatStatsSize(data.matchingBytes), Colors.valueFg)}`,
       `    ${fg('Tagged', Colors.labelFg)}`,
       `      ${fg('Files:', Colors.labelFg)}  ${fg(formatNumber(data.taggedFiles), Colors.valueFg)}`,
-      `      ${fg('Bytes:', Colors.labelFg)}  ${fg(formatNumber(data.taggedBytes), Colors.valueFg)}`,
+      `      ${fg('Bytes:', Colors.labelFg)}  ${fg(formatStatsSize(data.taggedBytes), Colors.valueFg)}`,
       '',
       `  ${fg('Current Directory', Colors.labelFg)}`,
       `    ${fg(data.currentDirName, Colors.valueFg)}`,
