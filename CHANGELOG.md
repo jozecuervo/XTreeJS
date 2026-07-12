@@ -10,6 +10,13 @@ The format is based on Keep a Changelog and follows semantic versioning.
 
 - Updated the terminal palette from generic ANSI yellow/blue to explicit gold on royal blue hex colors.
 
+### Fixed
+
+- Tree pane no longer steals keyboard focus back from the file pane on every UI refresh (`setFocused(false)` was unconditionally calling `.focus()`).
+- Viewer tab-size toggle (`t`) now actually re-expands tab characters instead of only updating the hint label.
+- Tree node expand/collapse (`*`) no longer double-refreshes with stale data while an async expand is still in flight.
+- Statistics pane now formats byte counts with compact units (K/M/G) instead of raw byte counts.
+
 ## [0.1.0] - 2026-05-15
 
 ### Added

@@ -11,7 +11,7 @@ XTreeJS is a modern revival of the classic DOS-era XTree file manager (1985–19
 - **Runtime:** Bun (not Node)
 - **Language:** TypeScript
 - **TUI Framework:** blessed / neo-blessed
-- **External CLI tools:** `fd` (listing), `bat` (syntax-highlighted viewing), `rsync`/`ditto` (copy/move), `trash` (safe delete), `dust`/`duf` (disk stats)
+- **External CLI tools:** `fd` (listing), `bat` (syntax-highlighted viewing), `rsync` (copy/move), `trash` (safe delete), `duf` (disk stats), `chafa` (image preview) — each has a native `fs`/`child_process` fallback except `trash`
 
 ## Build & Run Commands
 
@@ -30,7 +30,7 @@ The app follows a shell-heavy approach — it delegates filesystem operations to
 - **TUI layer** — blessed/neo-blessed widgets, layout, keybindings, colors (DOS-era palette)
 - **Command dispatcher** — single-key handler with mode awareness (normal mode vs viewer mode)
 - **App state** — current path, tagged files, sort order, filespec filter, selection position, viewer state
-- **Filesystem layer** — spawns external tools (fd, bat, rsync, trash, dust/duf)
+- **Filesystem layer** — spawns external tools (fd, bat, rsync, trash, duf, chafa)
 - **Cache** — directory listings, file sizes, mtimes, tagged paths
 
 See `ARCHITECTURE.md` for the rationale behind these choices (why an off-the-shelf TUI framework, why shell out instead of reimplementing in TypeScript, and the deliberate exception for delete/prune safety).
@@ -70,7 +70,9 @@ See `ARCHITECTURE.md` for the rationale behind these choices (why an off-the-she
 These must be installed on the system (macOS via Homebrew):
 
 ```bash
-brew install fd bat trash rsync dust duf
+brew install fd bat trash rsync duf chafa
 ```
 
-`fd` and `bat` are required; others are optional with fallbacks.
+Only `trash` is a hard requirement, and only for delete/prune (by design, no
+fallback to a raw `rm`). Every other tool — including `fd` and `bat` — has a
+native `fs`/`child_process` fallback and degrades gracefully if missing.
