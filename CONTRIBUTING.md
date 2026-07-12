@@ -9,6 +9,7 @@ bun test
 
 ## Workflow
 
+0. Read `ARCHITECTURE.md` before touching the `tui` or `fs` layers — it explains why each is built the way it is, including the deliberate lack of a `trash` fallback for delete/prune.
 1. Create a branch from `main`.
 2. Keep changes scoped to one concern.
 3. Add or update tests for behavior changes.

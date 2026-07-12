@@ -33,6 +33,8 @@ The app follows a shell-heavy approach — it delegates filesystem operations to
 - **Filesystem layer** — spawns external tools (fd, bat, rsync, trash, dust/duf)
 - **Cache** — directory listings, file sizes, mtimes, tagged paths
 
+See `ARCHITECTURE.md` for the rationale behind these choices (why an off-the-shelf TUI framework, why shell out instead of reimplementing in TypeScript, and the deliberate exception for delete/prune safety).
+
 **Two primary modes:**
 1. **Normal mode** — two-pane layout (tree left, file list right) with navigation, tagging, and file actions
 2. **Viewer mode** — syntax-highlighted file viewing via bat, with search, hex toggle, and scroll

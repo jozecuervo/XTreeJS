@@ -30,6 +30,16 @@ The goal is to keep the spirit and interaction model recognizable while making i
 - Tagging workflows (single, bulk, global, pattern-based)
 - Safe delete/prune via system trash CLI
 
+## Architecture
+
+Two layers, each delegating to a specialized dependency rather than
+reinventing it: a [neo-blessed](https://github.com/embarklabs/neo-blessed)
+TUI for rendering/input, and a shell-first filesystem layer (`fd`, `bat`,
+`rsync`, `trash`, `chafa`) with native `fs` fallbacks where a tool isn't
+installed. See [ARCHITECTURE.md](ARCHITECTURE.md) for the full breakdown,
+including the pros/cons behind each choice and the one place (delete/prune)
+where a fallback is deliberately refused for safety.
+
 ## Requirements
 
 - Bun 1.3.8+
