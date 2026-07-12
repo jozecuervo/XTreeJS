@@ -160,6 +160,23 @@ export function searchInLines(lines: string[], query: string): number[] {
   return matches;
 }
 
+export function expandTabs(line: string, tabSize: number): string {
+  if (tabSize <= 0 || !line.includes('\t')) return line;
+  let result = '';
+  let col = 0;
+  for (const ch of line) {
+    if (ch === '\t') {
+      const spaces = tabSize - (col % tabSize);
+      result += ' '.repeat(spaces);
+      col += spaces;
+    } else {
+      result += ch;
+      col++;
+    }
+  }
+  return result;
+}
+
 export function wrapLines(lines: string[], width: number): string[] {
   const result: string[] = [];
   for (const line of lines) {

@@ -3,7 +3,7 @@ import { bgFg, Colors, fg } from '../config/defaults.js';
 import type { AppState, ViewerMode } from '../state/app-state.js';
 import {
   viewFile, viewFileHex, viewFileAscii, viewFileJunk,
-  searchInLines, wrapLines,
+  searchInLines, wrapLines, expandTabs,
 } from '../fs/view.js';
 import { showSearchPrompt } from './prompt.js';
 import * as path from 'path';
@@ -78,9 +78,12 @@ export function createViewerPane(
     const height = getVisibleHeight();
 
     let displayLines = lines;
+    if (vs?.tabSize) {
+      displayLines = displayLines.map((line) => expandTabs(line, vs.tabSize));
+    }
     if (vs?.wordWrap) {
       const width = (viewerBox.width as number) - 10; // margin for line numbers + border
-      displayLines = wrapLines(lines, Math.max(20, width));
+      displayLines = wrapLines(displayLines, Math.max(20, width));
     }
 
     const visibleLines = displayLines.slice(scrollPos, scrollPos + height);

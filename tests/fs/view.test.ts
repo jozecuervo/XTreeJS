@@ -3,7 +3,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import {
   viewFileHex, viewFileAscii, viewFileJunk,
-  searchInLines, wrapLines,
+  searchInLines, wrapLines, expandTabs,
 } from '../../src/fs/view.js';
 
 const TEST_DIR = '/tmp/claude/xtreejs-view-test';
@@ -80,6 +80,29 @@ describe('searchInLines', () => {
 
   test('returns empty for empty query', () => {
     expect(searchInLines(['a', 'b'], '')).toEqual([]);
+  });
+});
+
+describe('expandTabs', () => {
+  test('expands a leading tab to the next tab stop', () => {
+    expect(expandTabs('\tabc', 4)).toBe('    abc');
+  });
+
+  test('expands tabs to align on tab-size boundaries', () => {
+    expect(expandTabs('a\tb', 4)).toBe('a   b');
+    expect(expandTabs('ab\tc', 4)).toBe('ab  c');
+  });
+
+  test('supports a different tab size', () => {
+    expect(expandTabs('a\tb', 8)).toBe('a       b');
+  });
+
+  test('leaves lines without tabs unchanged', () => {
+    expect(expandTabs('no tabs here', 4)).toBe('no tabs here');
+  });
+
+  test('handles multiple tabs in one line', () => {
+    expect(expandTabs('\t\ta', 4)).toBe('        a');
   });
 });
 
