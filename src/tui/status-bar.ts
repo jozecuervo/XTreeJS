@@ -23,9 +23,6 @@ const FILE_HINTS =
   'F3 View  F5 Copy  F6 Move  F7 Del  F8 Prune  t Tag  s Sort  f Filter  q Quit  ? Help';
 const TREE_HINTS =
   '+/- Expand  Enter Open  m MkDir  Tab Files  \\ Root  q Quit  ? Help';
-const VIEWER_HINTS =
-  '↑↓ Scroll  PgUp/PgDn Page  Home/End Jump  h Hex  s Search  w Wrap  q/Esc Exit';
-const DIR_HINTS = FILE_HINTS;
 
 const SORT_LABELS: Record<SortOrder, string> = {
   name: 'Name',
@@ -101,4 +98,4 @@ export function createStatusBar(screen: blessed.Widgets.Screen): StatusBar {
   return { topBar, bottomBar, updatePath, updateBottomHints };
 }
 
-export { FILE_HINTS, TREE_HINTS, VIEWER_HINTS, DIR_HINTS };
+export { FILE_HINTS, TREE_HINTS };
