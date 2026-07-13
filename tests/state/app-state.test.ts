@@ -9,6 +9,7 @@ import {
   getVisibleEntries,
   getSelectedEntry,
   getOperationTargets,
+  advanceSelectionAfterTagChange,
 } from '../../src/state/app-state.js';
 import type { FileEntry } from '../../src/fs/list.js';
 
@@ -127,6 +128,70 @@ describe('getSelectedEntry', () => {
 
     expect(getVisibleEntries(state).map((entry) => entry.name)).toEqual(['b.txt']);
     expect(getSelectedEntry(state)?.name).toBe('b.txt');
+  });
+});
+
+describe('advanceSelectionAfterTagChange', () => {
+  test('advances by one in the normal (unfiltered) view', () => {
+    const state = createAppState('/home');
+    state.entries = [mockEntry('a.txt'), mockEntry('b.txt'), mockEntry('c.txt')];
+    state.selectedIndex = 0;
+    advanceSelectionAfterTagChange(state);
+    expect(state.selectedIndex).toBe(1);
+  });
+
+  test('does not advance past the last entry in the normal view', () => {
+    const state = createAppState('/home');
+    state.entries = [mockEntry('a.txt'), mockEntry('b.txt')];
+    state.selectedIndex = 1;
+    advanceSelectionAfterTagChange(state);
+    expect(state.selectedIndex).toBe(1);
+  });
+
+  test('does not double-skip when untagging shrinks the tagged-only view', () => {
+    // Regression test: untagging the current entry in showTaggedOnly mode
+    // already removes it from the filtered list, so the entry after it
+    // slides into the same index. Advancing on top of that used to skip
+    // an extra entry (e.g. b -> h instead of b -> f) because the old code
+    // compared against the unfiltered entries.length.
+    const state = createAppState('/home');
+    state.entries = [
+      mockEntry('a.txt'), mockEntry('b.txt'), mockEntry('c.txt'),
+      mockEntry('d.txt'), mockEntry('e.txt'), mockEntry('f.txt'),
+      mockEntry('g.txt'), mockEntry('h.txt'), mockEntry('i.txt'),
+      mockEntry('j.txt'),
+    ];
+    state.taggedPaths.add('/test/b.txt');
+    state.taggedPaths.add('/test/d.txt');
+    state.taggedPaths.add('/test/f.txt');
+    state.taggedPaths.add('/test/h.txt');
+    state.taggedPaths.add('/test/j.txt');
+    state.showTaggedOnly = true;
+    state.selectedIndex = 1; // pointing at d.txt within the filtered [b,d,f,h,j] view
+
+    // Simulate untagging the currently selected entry (d.txt), then the
+    // post-tag-change cursor adjustment that every tag/untag command runs.
+    state.taggedPaths.delete('/test/d.txt');
+    advanceSelectionAfterTagChange(state);
+
+    expect(getVisibleEntries(state).map((e) => e.name)).toEqual([
+      'b.txt', 'f.txt', 'h.txt', 'j.txt',
+    ]);
+    expect(state.selectedIndex).toBe(1); // lands on f.txt, not h.txt
+  });
+
+  test('clamps into range when the visible list shrinks below the index', () => {
+    const state = createAppState('/home');
+    state.entries = [mockEntry('a.txt'), mockEntry('b.txt')];
+    state.taggedPaths.add('/test/b.txt');
+    state.showTaggedOnly = true;
+    state.selectedIndex = 0; // b.txt, the only visible entry
+
+    state.taggedPaths.delete('/test/b.txt');
+    advanceSelectionAfterTagChange(state);
+
+    expect(getVisibleEntries(state)).toEqual([]);
+    expect(state.selectedIndex).toBe(0);
   });
 });
 

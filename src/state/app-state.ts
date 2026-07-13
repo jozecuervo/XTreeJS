@@ -112,6 +112,22 @@ export function clampSelectedIndex(state: AppState): void {
   state.selectedIndex = Math.min(Math.max(0, state.selectedIndex), maxIndex);
 }
 
+/**
+ * Advances the selection by one after a tag/untag on the current entry,
+ * mimicking "move to the next item" — but only when the visible list isn't
+ * shrinking out from under the cursor. In showTaggedOnly mode, untagging
+ * the current entry removes it from the filtered view, so the item after
+ * it already slides into the same index; advancing on top of that would
+ * skip an extra entry. clampSelectedIndex() is always called afterward so
+ * the index stays valid even when the list shrank.
+ */
+export function advanceSelectionAfterTagChange(state: AppState): void {
+  if (!state.showTaggedOnly && state.selectedIndex < getVisibleEntries(state).length - 1) {
+    state.selectedIndex++;
+  }
+  clampSelectedIndex(state);
+}
+
 export function getSelectedEntry(state: AppState): FileEntry | undefined {
   return getVisibleEntries(state)[state.selectedIndex];
 }

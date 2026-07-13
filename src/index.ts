@@ -14,6 +14,7 @@ import {
   invertTags,
   getVisibleEntries,
   clampSelectedIndex,
+  advanceSelectionAfterTagChange,
 } from './state/app-state.js';
 import type { SortOrder } from './state/app-state.js';
 import {
@@ -429,9 +430,7 @@ async function main() {
         } else {
           state.taggedPaths.add(entry.path);
         }
-        if (state.selectedIndex < state.entries.length - 1) {
-          state.selectedIndex++;
-        }
+        advanceSelectionAfterTagChange(state);
         refreshUI();
       }
     },

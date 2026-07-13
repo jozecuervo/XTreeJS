@@ -8,7 +8,7 @@ import {
   untagCurrent,
   untagAll,
   getVisibleEntries,
-  clampSelectedIndex,
+  advanceSelectionAfterTagChange,
 } from '../state/app-state.js';
 import type { TreeState } from '../state/tree-state.js';
 import {
@@ -241,10 +241,7 @@ export function setupInput(
     if (entry && !entry.isDirectory) {
       toggleTag(state, entry.path);
       // Move down after tagging
-      if (!state.showTaggedOnly && state.selectedIndex < getVisibleEntries(state).length - 1) {
-        state.selectedIndex++;
-      }
-      clampSelectedIndex(state);
+      advanceSelectionAfterTagChange(state);
       callbacks.onRefresh();
     }
   });
@@ -260,10 +257,7 @@ export function setupInput(
     const entry = getSelectedEntry(state);
     if (entry) {
       untagCurrent(state, entry.path);
-      if (!state.showTaggedOnly && state.selectedIndex < getVisibleEntries(state).length - 1) {
-        state.selectedIndex++;
-      }
-      clampSelectedIndex(state);
+      advanceSelectionAfterTagChange(state);
       callbacks.onRefresh();
     }
   });
