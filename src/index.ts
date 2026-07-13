@@ -22,6 +22,7 @@ import {
 } from './state/tree-state.js';
 import { detectTools } from './fs/detect-tools.js';
 import { listDirectory, listDirectoryRecursive, listAllFilesRecursive, matchFilespec } from './fs/list.js';
+import type { FileEntry } from './fs/list.js';
 import { getDiskStats } from './fs/disk-stats.js';
 import { computeStatsForPaths, invalidateDirStats } from './fs/dir-stats.js';
 import type { DisplayMode } from './state/app-state.js';
@@ -31,6 +32,7 @@ import {
   renameFile, makeDirectory, getFileAttributes, setFilePermissions, openInEditor,
   patternRename,
 } from './fs/operations.js';
+import type { OperationResult } from './fs/operations.js';
 import { setupInput } from './tui/input.js';
 import { showPrompt, showConfirm, showAttributes } from './tui/prompt.js';
 import { showHelp, showQuickRef } from './tui/help-pane.js';
@@ -176,6 +178,23 @@ async function main() {
     screen.render();
   }
 
+  // Shared tail for copy/move/delete: report failure, untag the operated-on
+  // targets, and reload -- the only thing that differs between the three is
+  // which fs op produced `result` and the label for its failure message.
+  async function finishFileOperation(
+    targets: FileEntry[],
+    result: OperationResult,
+    label: string
+  ): Promise<void> {
+    if (!result.success) {
+      await showConfirm(screen, `${label} failed: ${result.error}`);
+    }
+    for (const t of targets) {
+      state.taggedPaths.delete(t.path);
+    }
+    await loadDirectory(state.currentPath);
+  }
+
   // Shared toggle for branch/showall: both recursively list `basePath` and
   // switch back to a normal listing of the current dir if already active.
   async function toggleRecursiveMode(
@@ -240,14 +259,7 @@ async function main() {
         targets.map((t) => t.path),
         dest
       );
-      if (!result.success) {
-        await showConfirm(screen, `Copy failed: ${result.error}`);
-      }
-      // Clear tags for copied files
-      for (const t of targets) {
-        state.taggedPaths.delete(t.path);
-      }
-      await loadDirectory(state.currentPath);
+      await finishFileOperation(targets, result, 'Copy');
     },
 
     onMove: async () => {
@@ -269,13 +281,7 @@ async function main() {
         targets.map((t) => t.path),
         dest
       );
-      if (!result.success) {
-        await showConfirm(screen, `Move failed: ${result.error}`);
-      }
-      for (const t of targets) {
-        state.taggedPaths.delete(t.path);
-      }
-      await loadDirectory(state.currentPath);
+      await finishFileOperation(targets, result, 'Move');
     },
 
     onDelete: async () => {
@@ -293,13 +299,7 @@ async function main() {
       }
 
       const result = await deleteFiles(targets.map((t) => t.path));
-      if (!result.success) {
-        await showConfirm(screen, `Delete failed: ${result.error}`);
-      }
-      for (const t of targets) {
-        state.taggedPaths.delete(t.path);
-      }
-      await loadDirectory(state.currentPath);
+      await finishFileOperation(targets, result, 'Delete');
     },
 
     onPrune: async () => {
