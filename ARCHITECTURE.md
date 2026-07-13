@@ -33,9 +33,11 @@ status bars, viewer, prompts (`src/tui/*.ts`).
 ## Layer 2: shell-heavy filesystem operations
 
 **Choice:** `src/fs/*.ts` delegates listing, viewing, and copy/move/delete to
-external CLI tools (`fd`, `bat`, `rsync`, `trash`, `chafa`, `dust`/`duf`) via
+external CLI tools (`fd`, `bat`, `rsync`, `trash`, `chafa`, `duf`) via
 Bun's `$` shell helper, detected once at startup (`src/fs/detect-tools.ts`)
-and cached for the process lifetime.
+and cached for the process lifetime. (`detectTools()` also probes for
+`dust`, but nothing in this layer calls it yet — it's detected and
+unused.)
 
 **Why shell out instead of reimplementing in TypeScript:**
 

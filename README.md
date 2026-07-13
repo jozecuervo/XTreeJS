@@ -47,7 +47,7 @@ where a fallback is deliberately refused for safety.
 
 Tool support:
 - Required for safety-critical operations: `trash` (delete/prune).
-- Optional (auto-detected): `fd`, `bat`, `rsync`, `dust`, `duf`, `chafa`.
+- Optional (auto-detected): `fd`, `bat`, `rsync`, `duf`, `chafa`.
 
 ## Quick Start
 
