@@ -246,8 +246,15 @@ export function createViewerPane(
           scrollUp(1);
           break;
         case 'down':
+          scrollDown(1);
+          break;
         case 'j':
+          // Shift+J (key.name 'j' with key.shift set) falls through to the
+          // default branch below, which toggles junk mode via ch === 'J'.
           if (!key.shift) scrollDown(1);
+          else {
+            await switchMode(vs?.viewerMode === 'junk' ? 'text' : 'junk');
+          }
           break;
         case 'pageup':
           if (vs?.followMode) stopFollow();
@@ -325,9 +332,6 @@ export function createViewerPane(
             }
           } else if (ch === 'a') {
             await switchMode(vs?.viewerMode === 'ascii' ? 'text' : 'ascii');
-          } else if (ch === 'J') {
-            // Shift+J for junk mode (plain j is scroll down)
-            await switchMode(vs?.viewerMode === 'junk' ? 'text' : 'junk');
           } else if (ch === 'f') {
             // Follow/tail mode toggle
             if (vs?.followMode) {
