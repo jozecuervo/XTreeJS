@@ -249,8 +249,8 @@ export function createViewerPane(
           scrollDown(1);
           break;
         case 'j':
-          // Shift+J (key.name 'j' with key.shift set) falls through to the
-          // default branch below, which toggles junk mode via ch === 'J'.
+          // blessed reports Shift+J as key.name 'j' with key.shift set
+          // (not 'J'), so it lands in this case too -- toggle junk mode.
           if (!key.shift) scrollDown(1);
           else {
             await switchMode(vs?.viewerMode === 'junk' ? 'text' : 'junk');
