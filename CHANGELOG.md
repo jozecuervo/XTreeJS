@@ -25,6 +25,8 @@ The format is based on Keep a Changelog and follows semantic versioning.
 
 - `tsc --noEmit` now typechecks `tests/` and `scripts/` too, not just `src/` — the `tsconfig.json` `include` list and CI's typecheck step previously left both directories unchecked (they're clean; this only closes the coverage gap).
 - `scripts/release.ts` (validates every tag/version/changelog release gate) had no test coverage at all; added 7 subprocess-driven tests covering the `check`/`notes` commands' success and failure paths.
+- Shift+J (toggle junk mode) in the viewer was unreachable dead code — blessed reports it as `key.name: 'j', key.shift: true`, not `'J'`, so it was always intercepted by the plain `j` scroll-down case before reaching the branch that handled it.
+- `i` (invert tag) could skip an extra entry when untagging the current item in tagged-only view, because it advanced the cursor by comparing against the unfiltered entry count instead of the filtered one that `t`/`u` already used correctly. Extracted the shared, correct logic into `advanceSelectionAfterTagChange()` so the three call sites can't drift again.
 - Tree pane no longer steals keyboard focus back from the file pane on every UI refresh (`setFocused(false)` was unconditionally calling `.focus()`).
 - Viewer tab-size toggle (`t`) now actually re-expands tab characters instead of only updating the hint label.
 - Tree node expand/collapse (`*`) no longer double-refreshes with stale data while an async expand is still in flight.

@@ -61,7 +61,7 @@ bun run src/index.ts
 
 ```bash
 bunx tsc --noEmit   # typecheck
-bun test            # 154 tests
+bun test            # 158 tests
 ```
 
 ## Release Contract
