@@ -84,12 +84,6 @@ Updated based on the original XTree / XTreePro Gold / XTreeGold manual reference
 
 ---
 
-## Known Bugs
-
-- **`\` key doesn't sync panes** -- backslash key doesn't sync tree pane selection with file pane's current directory
-
----
-
 ## Done (P2 -- Power Features)
 
 Features from later XTree versions (Gold/Pro Gold) that add real power.
