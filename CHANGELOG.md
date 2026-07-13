@@ -6,9 +6,16 @@ The format is based on Keep a Changelog and follows semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- `ARCHITECTURE.md` documenting the rationale for an off-the-shelf TUI framework and a shell-heavy filesystem layer, including the deliberate no-fallback exception for delete/prune.
+- README screenshot, family-legacy motivation section, and CI/license badges.
+- CI now runs `bunx tsc --noEmit` before the test step.
+
 ### Changed
 
 - Updated the terminal palette from generic ANSI yellow/blue to explicit gold on royal blue hex colors.
+- Bumped the `bun`/`bun-types` devDependency pin from `^1.2.0` to `^1.3.8` to match the `engines`/CI requirement.
 
 ### Fixed
 
@@ -16,6 +23,9 @@ The format is based on Keep a Changelog and follows semantic versioning.
 - Viewer tab-size toggle (`t`) now actually re-expands tab characters instead of only updating the hint label.
 - Tree node expand/collapse (`*`) no longer double-refreshes with stale data while an async expand is still in flight.
 - Statistics pane now formats byte counts with compact units (K/M/G) instead of raw byte counts.
+- `\` (and any other jump that skips intermediate directories, e.g. exiting branch/showall mode) no longer leaves the tree pane's highlighted row out of sync with the file pane's current directory.
+- `tsc --noEmit` now passes cleanly (added a typed shim for neo-blessed's missing declarations).
+- Corrected stale tool-fallback claims, a stale test count, and lingering `dust` references in `CLAUDE.md`/`README.md`/`ARCHITECTURE.md`/`TODO.md` that no longer matched the code.
 
 ## [0.1.0] - 2026-05-15
 
