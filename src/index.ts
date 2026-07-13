@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import * as path from 'path';
 import { createScreen } from './tui/screen.js';
 import { createTreePane } from './tui/tree-pane.js';
@@ -14,6 +15,7 @@ import {
   invertTags,
   getVisibleEntries,
   clampSelectedIndex,
+  advanceSelectionAfterTagChange,
 } from './state/app-state.js';
 import type { SortOrder } from './state/app-state.js';
 import {
@@ -22,6 +24,7 @@ import {
 } from './state/tree-state.js';
 import { detectTools } from './fs/detect-tools.js';
 import { listDirectory, listDirectoryRecursive, listAllFilesRecursive, matchFilespec } from './fs/list.js';
+import type { FileEntry } from './fs/list.js';
 import { getDiskStats } from './fs/disk-stats.js';
 import { computeStatsForPaths, invalidateDirStats } from './fs/dir-stats.js';
 import type { DisplayMode } from './state/app-state.js';
@@ -31,6 +34,7 @@ import {
   renameFile, makeDirectory, getFileAttributes, setFilePermissions, openInEditor,
   patternRename,
 } from './fs/operations.js';
+import type { OperationResult } from './fs/operations.js';
 import { setupInput } from './tui/input.js';
 import { showPrompt, showConfirm, showAttributes } from './tui/prompt.js';
 import { showHelp, showQuickRef } from './tui/help-pane.js';
@@ -53,9 +57,6 @@ async function main() {
   const filePane = createFilePane(screen);
 
   const statsPane = createStatsPane(screen);
-
-  // Store tree widget reference for input handler
-  (screen as any)._treeWidget = treePane.widget;
 
   // Viewer pane (created lazily on first use)
   const viewerPane = createViewerPane(screen, state, () => {
@@ -87,17 +88,24 @@ async function main() {
     screen.render();
   }
 
-  async function loadDirectory(dirPath: string): Promise<void> {
-    state.currentPath = dirPath;
-    state.listingMode = 'normal';
-    state.branchBasePath = null;
+  // Re-lists state.currentPath with the current sort/filespec and resets
+  // the selection -- the common tail of loadDirectory and every handler
+  // that changes sort order or the filespec filter without changing dir.
+  async function reloadEntries(): Promise<void> {
     state.entries = await listDirectory(
-      dirPath,
+      state.currentPath,
       state.sortOrder,
       state.sortDirection,
       state.filespecFilter
     );
     state.selectedIndex = 0;
+  }
+
+  async function loadDirectory(dirPath: string): Promise<void> {
+    state.currentPath = dirPath;
+    state.listingMode = 'normal';
+    state.branchBasePath = null;
+    await reloadEntries();
     updateDiskInfo(dirPath); // fire and forget, don't block
     refreshUI();
   }
@@ -172,8 +180,47 @@ async function main() {
     screen.render();
   }
 
+  // Shared tail for copy/move/delete: report failure, untag the operated-on
+  // targets, and reload -- the only thing that differs between the three is
+  // which fs op produced `result` and the label for its failure message.
+  async function finishFileOperation(
+    targets: FileEntry[],
+    result: OperationResult,
+    label: string
+  ): Promise<void> {
+    if (!result.success) {
+      await showConfirm(screen, `${label} failed: ${result.error}`);
+    }
+    for (const t of targets) {
+      state.taggedPaths.delete(t.path);
+    }
+    await loadDirectory(state.currentPath);
+  }
+
+  // Shared toggle for branch/showall: both recursively list `basePath` and
+  // switch back to a normal listing of the current dir if already active.
+  async function toggleRecursiveMode(
+    mode: 'branch' | 'showall',
+    basePath: string
+  ): Promise<void> {
+    if (state.listingMode === mode) {
+      await loadDirectory(state.currentPath);
+      return;
+    }
+    state.listingMode = mode;
+    state.branchBasePath = basePath;
+    state.entries = await listDirectoryRecursive(
+      basePath,
+      state.sortOrder,
+      state.sortDirection,
+      state.filespecFilter
+    );
+    state.selectedIndex = 0;
+    refreshUI();
+  }
+
   // Set up input handling
-  setupInput(screen, state, treeState, {
+  setupInput(screen, state, treeState, treePane, {
     onNavigate: async (navPath: string) => {
       await loadDirectory(navPath);
       // Expand every ancestor down to navPath so the tree has a node for it
@@ -214,14 +261,7 @@ async function main() {
         targets.map((t) => t.path),
         dest
       );
-      if (!result.success) {
-        await showConfirm(screen, `Copy failed: ${result.error}`);
-      }
-      // Clear tags for copied files
-      for (const t of targets) {
-        state.taggedPaths.delete(t.path);
-      }
-      await loadDirectory(state.currentPath);
+      await finishFileOperation(targets, result, 'Copy');
     },
 
     onMove: async () => {
@@ -243,13 +283,7 @@ async function main() {
         targets.map((t) => t.path),
         dest
       );
-      if (!result.success) {
-        await showConfirm(screen, `Move failed: ${result.error}`);
-      }
-      for (const t of targets) {
-        state.taggedPaths.delete(t.path);
-      }
-      await loadDirectory(state.currentPath);
+      await finishFileOperation(targets, result, 'Move');
     },
 
     onDelete: async () => {
@@ -267,13 +301,7 @@ async function main() {
       }
 
       const result = await deleteFiles(targets.map((t) => t.path));
-      if (!result.success) {
-        await showConfirm(screen, `Delete failed: ${result.error}`);
-      }
-      for (const t of targets) {
-        state.taggedPaths.delete(t.path);
-      }
-      await loadDirectory(state.currentPath);
+      await finishFileOperation(targets, result, 'Delete');
     },
 
     onPrune: async () => {
@@ -354,25 +382,13 @@ async function main() {
       const order: SortOrder[] = ['name', 'ext', 'date', 'size', 'unsorted'];
       const idx = order.indexOf(state.sortOrder);
       state.sortOrder = order[(idx + 1) % order.length];
-      state.entries = await listDirectory(
-        state.currentPath,
-        state.sortOrder,
-        state.sortDirection,
-        state.filespecFilter
-      );
-      state.selectedIndex = 0;
+      await reloadEntries();
       refreshUI();
     },
 
     onSortDirection: async () => {
       state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
-      state.entries = await listDirectory(
-        state.currentPath,
-        state.sortOrder,
-        state.sortDirection,
-        state.filespecFilter
-      );
-      state.selectedIndex = 0;
+      await reloadEntries();
       refreshUI();
     },
 
@@ -393,13 +409,7 @@ async function main() {
         if (state.filespecHistory.length > 2) state.filespecHistory.length = 2;
       }
       state.filespecFilter = spec || '*';
-      state.entries = await listDirectory(
-        state.currentPath,
-        state.sortOrder,
-        state.sortDirection,
-        state.filespecFilter
-      );
-      state.selectedIndex = 0;
+      await reloadEntries();
       refreshUI();
     },
 
@@ -408,13 +418,7 @@ async function main() {
         const prev = state.filespecHistory[0];
         state.filespecHistory[0] = state.filespecFilter;
         state.filespecFilter = prev;
-        state.entries = await listDirectory(
-          state.currentPath,
-          state.sortOrder,
-          state.sortDirection,
-          state.filespecFilter
-        );
-        state.selectedIndex = 0;
+        await reloadEntries();
         refreshUI();
       }
     },
@@ -427,9 +431,7 @@ async function main() {
         } else {
           state.taggedPaths.add(entry.path);
         }
-        if (state.selectedIndex < state.entries.length - 1) {
-          state.selectedIndex++;
-        }
+        advanceSelectionAfterTagChange(state);
         refreshUI();
       }
     },
@@ -539,8 +541,7 @@ async function main() {
     },
 
     onDeepDive: async () => {
-      const treeWidget = (screen as any)._treeWidget;
-      const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
+      const idx = treePane.getSelectedIndex();
       const node = treeState.flatNodes[idx];
       if (!node) return;
       const target = await deepDive(node);
@@ -548,19 +549,18 @@ async function main() {
       await loadDirectory(target.path);
       // Select the target node in the tree
       const newIdx = treeState.flatNodes.findIndex((n) => n.path === target.path);
-      if (newIdx >= 0 && treeWidget) {
-        treeWidget.select(newIdx);
+      if (newIdx >= 0) {
+        treePane.widget.select(newIdx);
       }
       refreshUI();
       computeTreeStats().catch(() => {}); // fire and forget
     },
 
     onNextSibling: () => {
-      const treeWidget = (screen as any)._treeWidget;
-      const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
+      const idx = treePane.getSelectedIndex();
       const nextIdx = findNextSibling(treeState.flatNodes, idx);
-      if (nextIdx !== idx && treeWidget) {
-        treeWidget.select(nextIdx);
+      if (nextIdx !== idx) {
+        treePane.widget.select(nextIdx);
         const node = treeState.flatNodes[nextIdx];
         if (node) {
           loadDirectory(node.path);
@@ -573,10 +573,7 @@ async function main() {
     },
 
     onTreeRoot: async () => {
-      const treeWidget = (screen as any)._treeWidget;
-      if (treeWidget) {
-        treeWidget.select(0);
-      }
+      treePane.widget.select(0);
       const root = treeState.flatNodes[0];
       if (root) {
         await loadDirectory(root.path);
@@ -621,38 +618,11 @@ async function main() {
     },
 
     onBranchMode: async () => {
-      if (state.listingMode === 'branch') {
-        // Toggle off
-        await loadDirectory(state.currentPath);
-      } else {
-        state.listingMode = 'branch';
-        state.branchBasePath = state.currentPath;
-        state.entries = await listDirectoryRecursive(
-          state.currentPath,
-          state.sortOrder,
-          state.sortDirection,
-          state.filespecFilter
-        );
-        state.selectedIndex = 0;
-        refreshUI();
-      }
+      await toggleRecursiveMode('branch', state.currentPath);
     },
 
     onShowallMode: async () => {
-      if (state.listingMode === 'showall') {
-        await loadDirectory(state.currentPath);
-      } else {
-        state.listingMode = 'showall';
-        state.branchBasePath = treeState.root.path;
-        state.entries = await listDirectoryRecursive(
-          treeState.root.path,
-          state.sortOrder,
-          state.sortDirection,
-          state.filespecFilter
-        );
-        state.selectedIndex = 0;
-        refreshUI();
-      }
+      await toggleRecursiveMode('showall', treeState.root.path);
     },
 
     onTagByFilespec: async () => {

@@ -57,10 +57,28 @@ bun test
 bun run src/index.ts
 ```
 
+### Install as a command
+
+From a local clone, `bun link` registers an `xtree` binary (via the
+`bin` field in `package.json`) with no publishing required:
+
+```bash
+bun link
+xtree
+```
+
+This drops a symlink at `~/.bun/bin/xtree` pointing back at this
+repo's `src/index.ts`. Make sure `~/.bun/bin` is on your `PATH` (the
+Bun installer usually adds it to your shell profile) — if `xtree`
+isn't found after linking, add `export PATH="$HOME/.bun/bin:$PATH"`
+to your `~/.zshrc` or `~/.bashrc` and restart your shell. `bun unlink`
+reverses it.
+
 ## Test Suite
 
 ```bash
-bun test
+bunx tsc --noEmit   # typecheck
+bun test            # 158 tests
 ```
 
 ## Release Contract
@@ -71,7 +89,7 @@ bun test
 4. Run `bun run release:check vX.Y.Z` locally before tagging.
 5. Push tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 
-The release workflow re-runs tests, validates tag/package/changelog alignment, and publishes the matching changelog entry as the GitHub Release body.
+The release workflow re-runs the typecheck and test suite, validates tag/package/changelog alignment, and publishes the matching changelog entry as the GitHub Release body.
 
 ## License
 

@@ -8,7 +8,7 @@ import {
   untagCurrent,
   untagAll,
   getVisibleEntries,
-  clampSelectedIndex,
+  advanceSelectionAfterTagChange,
 } from '../state/app-state.js';
 import type { TreeState } from '../state/tree-state.js';
 import {
@@ -17,6 +17,7 @@ import {
   toggleNode,
   refreshFlatNodes,
 } from '../state/tree-state.js';
+import type { TreePane } from './tree-pane.js';
 
 export interface InputCallbacks {
   onNavigate(path: string): void;
@@ -62,6 +63,7 @@ export function setupInput(
   screen: blessed.Widgets.Screen,
   state: AppState,
   treeState: TreeState,
+  treePane: TreePane,
   callbacks: InputCallbacks
 ): void {
   screen.key(['q', 'x'], () => {
@@ -88,11 +90,8 @@ export function setupInput(
       }
     } else {
       // Tree navigation handled via tree pane's selected index
-      const treeWidget = (screen as any)._treeWidget;
-      if (treeWidget) {
-        treeWidget.up(1);
-        screen.render();
-      }
+      treePane.widget.up(1);
+      screen.render();
     }
   });
 
@@ -105,11 +104,8 @@ export function setupInput(
         callbacks.onRefresh();
       }
     } else {
-      const treeWidget = (screen as any)._treeWidget;
-      if (treeWidget) {
-        treeWidget.down(1);
-        screen.render();
-      }
+      treePane.widget.down(1);
+      screen.render();
     }
   });
 
@@ -126,8 +122,7 @@ export function setupInput(
       }
     } else {
       // In tree: expand or navigate to selected dir
-      const treeWidget = (screen as any)._treeWidget;
-      const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
+      const idx = treePane.getSelectedIndex();
       const node = treeState.flatNodes[idx];
       if (node) {
         if (node.hasSubdirs && !node.expanded) {
@@ -166,8 +161,7 @@ export function setupInput(
       }
     } else {
       // In tree: macOS pattern — if expanded, collapse; if collapsed, jump to parent
-      const treeWidget = (screen as any)._treeWidget;
-      const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
+      const idx = treePane.getSelectedIndex();
       const node = treeState.flatNodes[idx];
       if (node && node.expanded) {
         collapseNode(node);
@@ -177,7 +171,7 @@ export function setupInput(
         // Jump to parent: scan backwards for first node at depth - 1
         for (let i = idx - 1; i >= 0; i--) {
           if (treeState.flatNodes[i].depth === node.depth - 1) {
-            treeWidget?.select(i);
+            treePane.widget.select(i);
             const parentNode = treeState.flatNodes[i];
             callbacks.onTreeSelect(parentNode.path);
             break;
@@ -247,10 +241,7 @@ export function setupInput(
     if (entry && !entry.isDirectory) {
       toggleTag(state, entry.path);
       // Move down after tagging
-      if (!state.showTaggedOnly && state.selectedIndex < getVisibleEntries(state).length - 1) {
-        state.selectedIndex++;
-      }
-      clampSelectedIndex(state);
+      advanceSelectionAfterTagChange(state);
       callbacks.onRefresh();
     }
   });
@@ -266,10 +257,7 @@ export function setupInput(
     const entry = getSelectedEntry(state);
     if (entry) {
       untagCurrent(state, entry.path);
-      if (!state.showTaggedOnly && state.selectedIndex < getVisibleEntries(state).length - 1) {
-        state.selectedIndex++;
-      }
-      clampSelectedIndex(state);
+      advanceSelectionAfterTagChange(state);
       callbacks.onRefresh();
     }
   });
@@ -283,8 +271,7 @@ export function setupInput(
   // Tree expand/collapse (when tree focused)
   screen.key(['+', '='], () => {
     if (state.viewMode !== 'normal' || state.focusPane !== 'tree') return;
-    const treeWidget = (screen as any)._treeWidget;
-    const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
+    const idx = treePane.getSelectedIndex();
     const node = treeState.flatNodes[idx];
     if (node && !node.expanded && node.hasSubdirs) {
       expandNode(node).then(() => {
@@ -296,8 +283,7 @@ export function setupInput(
 
   screen.key(['-'], () => {
     if (state.viewMode !== 'normal' || state.focusPane !== 'tree') return;
-    const treeWidget = (screen as any)._treeWidget;
-    const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
+    const idx = treePane.getSelectedIndex();
     const node = treeState.flatNodes[idx];
     if (node && node.expanded) {
       collapseNode(node);
@@ -308,8 +294,7 @@ export function setupInput(
 
   screen.key(['*'], () => {
     if (state.viewMode !== 'normal' || state.focusPane !== 'tree') return;
-    const treeWidget = (screen as any)._treeWidget;
-    const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
+    const idx = treePane.getSelectedIndex();
     const node = treeState.flatNodes[idx];
     if (!node) return;
 

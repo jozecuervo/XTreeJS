@@ -102,8 +102,22 @@ export async function viewFile(
   }
 }
 
-export async function viewFileHex(filePath: string): Promise<ViewResult> {
+/**
+ * Runs `build` and wraps its result lines as a ViewResult, or reports the
+ * error as a single-line ViewResult if it throws — the shared shape every
+ * viewFile* variant below needs.
+ */
+async function toViewResult(build: () => Promise<string[]>): Promise<ViewResult> {
   try {
+    const lines = await build();
+    return { lines, totalLines: lines.length };
+  } catch (err: any) {
+    return { lines: [`Error: ${err.message}`], totalLines: 1 };
+  }
+}
+
+export function viewFileHex(filePath: string): Promise<ViewResult> {
+  return toViewResult(async () => {
     const buffer = await fs.readFile(filePath);
     const lines: string[] = [];
     const bytesPerLine = 16;
@@ -120,32 +134,21 @@ export async function viewFileHex(filePath: string): Promise<ViewResult> {
       lines.push(`${offsetStr}  ${hex.padEnd(bytesPerLine * 3 - 1)}  |${ascii}|`);
     }
 
-    return { lines, totalLines: lines.length };
-  } catch (err: any) {
-    return { lines: [`Error: ${err.message}`], totalLines: 1 };
-  }
+    return lines;
+  });
 }
 
-export async function viewFileAscii(filePath: string): Promise<ViewResult> {
-  try {
-    const content = await fs.readFile(filePath, 'utf-8');
-    const lines = content.split('\n');
-    return { lines, totalLines: lines.length };
-  } catch (err: any) {
-    return { lines: [`Error: ${err.message}`], totalLines: 1 };
-  }
+export function viewFileAscii(filePath: string): Promise<ViewResult> {
+  return toViewResult(async () => (await fs.readFile(filePath, 'utf-8')).split('\n'));
 }
 
-export async function viewFileJunk(filePath: string): Promise<ViewResult> {
-  try {
+export function viewFileJunk(filePath: string): Promise<ViewResult> {
+  return toViewResult(async () => {
     const content = await fs.readFile(filePath, 'utf-8');
     // Replace non-printable chars (except newline, tab) with .
     const cleaned = content.replace(/[^\x20-\x7E\n\t]/g, '.');
-    const lines = cleaned.split('\n');
-    return { lines, totalLines: lines.length };
-  } catch (err: any) {
-    return { lines: [`Error: ${err.message}`], totalLines: 1 };
-  }
+    return cleaned.split('\n');
+  });
 }
 
 export function searchInLines(lines: string[], query: string): number[] {
