@@ -21,6 +21,7 @@ The format is based on Keep a Changelog and follows semantic versioning.
 
 ### Fixed
 
+- `tsc --noEmit` now typechecks `tests/` and `scripts/` too, not just `src/` — the `tsconfig.json` `include` list and CI's typecheck step previously left both directories unchecked (they're clean; this only closes the coverage gap).
 - Tree pane no longer steals keyboard focus back from the file pane on every UI refresh (`setFocused(false)` was unconditionally calling `.focus()`).
 - Viewer tab-size toggle (`t`) now actually re-expands tab characters instead of only updating the hint label.
 - Tree node expand/collapse (`*`) no longer double-refreshes with stale data while an async expand is still in flight.
