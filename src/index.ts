@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import * as path from 'path';
 import { createScreen } from './tui/screen.js';
 import { createTreePane } from './tui/tree-pane.js';

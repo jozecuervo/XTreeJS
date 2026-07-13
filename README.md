@@ -57,6 +57,9 @@ bun test
 bun run src/index.ts
 ```
 
+Installed as a dependency (e.g. `bun add -g xtreejs`), the package also
+registers an `xtree` binary that launches the app directly.
+
 ## Test Suite
 
 ```bash
