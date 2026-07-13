@@ -7,7 +7,6 @@ import {
   tagAll,
   untagCurrent,
   untagAll,
-  invertTags,
   getVisibleEntries,
   clampSelectedIndex,
 } from '../state/app-state.js';
@@ -17,9 +16,6 @@ import {
   collapseNode,
   toggleNode,
   refreshFlatNodes,
-  deepDive,
-  findNextSibling,
-  findPrevSibling,
 } from '../state/tree-state.js';
 
 export interface InputCallbacks {
@@ -315,16 +311,21 @@ export function setupInput(
     const treeWidget = (screen as any)._treeWidget;
     const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
     const node = treeState.flatNodes[idx];
-    if (node) {
-      toggleNode(node)?.then?.(() => {
+    if (!node) return;
+
+    // Capture state before toggling: collapse is synchronous, expand is not
+    // (it awaits a readdir). Checking node.expanded after the call can't
+    // distinguish "just collapsed" from "expand still in flight".
+    const wasExpanded = node.expanded;
+    const result = toggleNode(node);
+    if (wasExpanded) {
+      refreshFlatNodes(treeState);
+      callbacks.onRefresh();
+    } else {
+      result?.then?.(() => {
         refreshFlatNodes(treeState);
         callbacks.onRefresh();
       });
-      if (node.expanded === false) {
-        // Was sync collapse
-        refreshFlatNodes(treeState);
-        callbacks.onRefresh();
-      }
     }
   });
 

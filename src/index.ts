@@ -17,7 +17,7 @@ import {
 } from './state/app-state.js';
 import type { SortOrder } from './state/app-state.js';
 import {
-  createTreeState, expandNode, refreshFlatNodes,
+  createTreeState, expandNode, refreshFlatNodes, expandTreeToPath,
   deepDive, findNextSibling,
 } from './state/tree-state.js';
 import { detectTools } from './fs/detect-tools.js';
@@ -176,12 +176,12 @@ async function main() {
   setupInput(screen, state, treeState, {
     onNavigate: async (navPath: string) => {
       await loadDirectory(navPath);
-      // Try to expand the tree node for this path
-      const node = treeState.flatNodes.find((n) => n.path === navPath);
-      if (node && node.hasSubdirs && !node.expanded) {
-        await expandNode(node);
-        refreshFlatNodes(treeState);
-      }
+      // Expand every ancestor down to navPath so the tree has a node for it
+      // to select — a shallow "is it already a node?" check missed paths
+      // whose ancestors were never individually expanded (e.g. jumping out
+      // of branch/showall mode via `\` onto a deeply nested directory).
+      await expandTreeToPath(treeState, navPath);
+      refreshFlatNodes(treeState);
       refreshUI();
       computeTreeStats().catch(() => {}); // fire and forget
     },
@@ -199,7 +199,6 @@ async function main() {
       const targets = getOperationTargets(state);
       if (targets.length === 0) return;
 
-      const names = targets.map((t) => t.name).join(', ');
       const dest = await showPrompt(
         screen,
         `Copy ${targets.length} item(s) to:`,

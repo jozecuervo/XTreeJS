@@ -96,12 +96,41 @@ const HELP_MAP: Record<HelpContext, { title: string; entries: HelpEntry[] }> = {
   viewer: { title: 'Viewer Commands', entries: VIEWER_HELP },
 };
 
-function formatHelp(entries: HelpEntry[], width: number): string[] {
+function wrapText(text: string, maxWidth: number): string[] {
+  if (text.length <= maxWidth) return [text];
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let current = '';
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length > maxWidth && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+export function formatHelp(entries: HelpEntry[], width: number): string[] {
   const keyWidth = 16;
+  const indent = 2; // leading spaces before the key column
+  const gap = 1; // space between key and description
+  const border = 2; // box border consumes a column on each side
+  // Wrap the description into the space actually left over once the box
+  // border, indent, and key column are accounted for, so narrow terminals
+  // (small `width`) don't clip or overflow the description text.
+  const descWidth = Math.max(10, width - border - indent - keyWidth - gap);
   const lines: string[] = [];
   for (const entry of entries) {
     const key = entry.key.padEnd(keyWidth);
-    lines.push(`  ${fg(key, Colors.valueFg)} ${entry.description}`);
+    const wrapped = wrapText(entry.description, descWidth);
+    wrapped.forEach((line, i) => {
+      const prefix = i === 0 ? fg(key, Colors.valueFg) : ' '.repeat(keyWidth);
+      lines.push(`  ${prefix} ${line}`);
+    });
   }
   return lines;
 }

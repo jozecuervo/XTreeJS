@@ -4,7 +4,7 @@ A modern revival of the classic DOS-era XTree file manager (1985-1995), built wi
 
 Updated based on the original XTree / XTreePro Gold / XTreeGold manual reference.
 
-**Test suite:** 132 tests passing
+**Test suite:** 147 tests passing
 **Planning:** Strategic milestones live in `ROADMAP.md`; this file tracks implementation tasks.
 
 ---
@@ -41,14 +41,14 @@ Updated based on the original XTree / XTreePro Gold / XTreeGold manual reference
 - [x] **Makedir (m in dir mode)** -- create new subdirectory when tree pane focused
 - [x] **Invert tag (i)** -- toggle tag on current file
 - [x] **Ctrl+I invert all tags** -- invert all tags across current view
-- [x] **External editor (e/F4)** -- open file in $EDITOR (see known bugs)
+- [x] **External editor (e/F4)** -- open file in $EDITOR, suspending and resuming the TUI around it
 
 ### Viewer (matching original)
 
 - [x] **Hex dump view (h or d)** -- hex + ASCII side-by-side display
 - [x] **Search in viewer (s or F9)** -- search for text, Space for next match
 - [x] **Word wrap toggle (w)** -- toggle word wrapping in viewer
-- [x] **Tab size toggle (t in viewer)** -- toggle between 4 and 8 space tabs (see known bugs)
+- [x] **Tab size toggle (t in viewer)** -- toggle between 4 and 8 space tabs, re-expanding existing tab characters
 - [x] **ASCII/Junk mode (a/j)** -- raw ASCII view and strip-non-printable mode
 
 ### Sorting & Filtering
@@ -62,7 +62,7 @@ Updated based on the original XTree / XTreePro Gold / XTreeGold manual reference
 ### Tree Navigation (matching original)
 
 - [x] **Right arrow deep-dive** -- in tree, Right arrow follows path to deepest subdirectory
-- [x] **Tab between sibling dirs** -- jump to next directory at same indentation level
+- [x] **Backtick (`` ` ``) between sibling dirs** -- jump to next directory at same indentation level
 - [x] **Home goes to root** -- in tree, Home jumps to root of tree
 
 ### Help
@@ -81,14 +81,6 @@ Updated based on the original XTree / XTreePro Gold / XTreeGold manual reference
 - [x] **Directory statistics in tree** -- show file count and size per directory in tree pane (via `dir-stats.ts`)
 - [x] **Volume root tree** -- tree starts at volume root
 - [x] **Image viewer quality** -- improved chafa rendering
-
----
-
-## Known Bugs
-
-- **Tab size toggle is cosmetic** -- toggling tab size in viewer changes state but doesn't re-render existing tab characters
-- **`*` tag-all race condition** -- `*` key in tree calls async `listDirectory` to tag all files, but doesn't await properly
-- **`\` key doesn't sync panes** -- backslash key doesn't sync tree pane selection with file pane's current directory
 
 ---
 

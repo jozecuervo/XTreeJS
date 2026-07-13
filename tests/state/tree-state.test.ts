@@ -11,6 +11,7 @@ import {
   deepDive,
   findNextSibling,
   findPrevSibling,
+  expandTreeToPath,
 } from '../../src/state/tree-state.js';
 
 const TEST_DIR = '/tmp/claude/xtreejs-tree-test';
@@ -143,6 +144,44 @@ describe('refreshFlatNodes', () => {
     }
     refreshFlatNodes(state);
     expect(state.flatNodes.length).toBeGreaterThanOrEqual(initialCount);
+  });
+});
+
+describe('expandTreeToPath', () => {
+  test('expands ancestors so a deeply nested, never-expanded path becomes selectable', async () => {
+    const state = await createTreeState(TEST_DIR);
+    const resolvedTestDir = await fs.realpath(TEST_DIR);
+    const targetPath = path.join(resolvedTestDir, 'alpha', 'nested');
+
+    // Collapse everything back to just the root, simulating a tree that
+    // never expanded down this branch (e.g. after a jump far from anywhere
+    // previously visited).
+    collapseNode(state.root);
+    refreshFlatNodes(state);
+    expect(state.flatNodes.length).toBe(1);
+    expect(state.flatNodes.find((n) => n.path === targetPath)).toBeUndefined();
+
+    await expandTreeToPath(state, targetPath);
+    refreshFlatNodes(state);
+
+    expect(state.flatNodes.find((n) => n.path === targetPath)).toBeDefined();
+  });
+
+  test('is a no-op when targetPath is the tree root', async () => {
+    const state = await createTreeState(TEST_DIR);
+    collapseNode(state.root);
+    refreshFlatNodes(state);
+    await expandTreeToPath(state, state.root.path);
+    expect(state.root.expanded).toBe(false);
+  });
+
+  test('does nothing for a path outside the tree root', async () => {
+    // Build a tree rooted below the filesystem root (unlike the app's real
+    // volume-rooted tree) so a sibling path genuinely falls outside it.
+    const root = await createTreeNode(path.join(TEST_DIR, 'alpha'), 0, true);
+    const state = { root, flatNodes: flattenTree(root) };
+    await expandTreeToPath(state, path.join(TEST_DIR, 'beta'));
+    expect(state.root.expanded).toBe(false);
   });
 });
 

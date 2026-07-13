@@ -85,7 +85,12 @@ export function createTreePane(screen: blessed.Widgets.Screen): TreePane {
     (widget.style.border as any).fg = focused
       ? Colors.borderFocused
       : Colors.border;
-    widget.focus();
+    // Only steal keyboard focus when actually becoming focused — calling
+    // this unconditionally would yank focus back to the tree on every
+    // refreshUI() even while the file pane is focused.
+    if (focused) {
+      widget.focus();
+    }
     screen.render();
   }
 
