@@ -60,7 +60,8 @@ bun run src/index.ts
 ## Test Suite
 
 ```bash
-bun test
+bunx tsc --noEmit   # typecheck
+bun test            # 147 tests
 ```
 
 ## Release Contract
@@ -71,7 +72,7 @@ bun test
 4. Run `bun run release:check vX.Y.Z` locally before tagging.
 5. Push tag: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 
-The release workflow re-runs tests, validates tag/package/changelog alignment, and publishes the matching changelog entry as the GitHub Release body.
+The release workflow re-runs the typecheck and test suite, validates tag/package/changelog alignment, and publishes the matching changelog entry as the GitHub Release body.
 
 ## License
 

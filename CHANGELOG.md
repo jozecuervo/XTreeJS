@@ -16,6 +16,8 @@ The format is based on Keep a Changelog and follows semantic versioning.
 
 - Updated the terminal palette from generic ANSI yellow/blue to explicit gold on royal blue hex colors.
 - Bumped the `bun`/`bun-types` devDependency pin from `^1.2.0` to `^1.3.8` to match the `engines`/CI requirement.
+- Release workflow now also runs the typecheck step, matching CI.
+- Downsized the README screenshot from a 3424px-wide Retina capture to 1440px (1.5M -> 512K) with no visible quality loss at its displayed width.
 
 ### Fixed
 
