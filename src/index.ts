@@ -84,17 +84,24 @@ async function main() {
     screen.render();
   }
 
-  async function loadDirectory(dirPath: string): Promise<void> {
-    state.currentPath = dirPath;
-    state.listingMode = 'normal';
-    state.branchBasePath = null;
+  // Re-lists state.currentPath with the current sort/filespec and resets
+  // the selection -- the common tail of loadDirectory and every handler
+  // that changes sort order or the filespec filter without changing dir.
+  async function reloadEntries(): Promise<void> {
     state.entries = await listDirectory(
-      dirPath,
+      state.currentPath,
       state.sortOrder,
       state.sortDirection,
       state.filespecFilter
     );
     state.selectedIndex = 0;
+  }
+
+  async function loadDirectory(dirPath: string): Promise<void> {
+    state.currentPath = dirPath;
+    state.listingMode = 'normal';
+    state.branchBasePath = null;
+    await reloadEntries();
     updateDiskInfo(dirPath); // fire and forget, don't block
     refreshUI();
   }
@@ -167,6 +174,28 @@ async function main() {
     treePane.setFocused(state.focusPane === 'tree');
 
     screen.render();
+  }
+
+  // Shared toggle for branch/showall: both recursively list `basePath` and
+  // switch back to a normal listing of the current dir if already active.
+  async function toggleRecursiveMode(
+    mode: 'branch' | 'showall',
+    basePath: string
+  ): Promise<void> {
+    if (state.listingMode === mode) {
+      await loadDirectory(state.currentPath);
+      return;
+    }
+    state.listingMode = mode;
+    state.branchBasePath = basePath;
+    state.entries = await listDirectoryRecursive(
+      basePath,
+      state.sortOrder,
+      state.sortDirection,
+      state.filespecFilter
+    );
+    state.selectedIndex = 0;
+    refreshUI();
   }
 
   // Set up input handling
@@ -351,25 +380,13 @@ async function main() {
       const order: SortOrder[] = ['name', 'ext', 'date', 'size', 'unsorted'];
       const idx = order.indexOf(state.sortOrder);
       state.sortOrder = order[(idx + 1) % order.length];
-      state.entries = await listDirectory(
-        state.currentPath,
-        state.sortOrder,
-        state.sortDirection,
-        state.filespecFilter
-      );
-      state.selectedIndex = 0;
+      await reloadEntries();
       refreshUI();
     },
 
     onSortDirection: async () => {
       state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
-      state.entries = await listDirectory(
-        state.currentPath,
-        state.sortOrder,
-        state.sortDirection,
-        state.filespecFilter
-      );
-      state.selectedIndex = 0;
+      await reloadEntries();
       refreshUI();
     },
 
@@ -390,13 +407,7 @@ async function main() {
         if (state.filespecHistory.length > 2) state.filespecHistory.length = 2;
       }
       state.filespecFilter = spec || '*';
-      state.entries = await listDirectory(
-        state.currentPath,
-        state.sortOrder,
-        state.sortDirection,
-        state.filespecFilter
-      );
-      state.selectedIndex = 0;
+      await reloadEntries();
       refreshUI();
     },
 
@@ -405,13 +416,7 @@ async function main() {
         const prev = state.filespecHistory[0];
         state.filespecHistory[0] = state.filespecFilter;
         state.filespecFilter = prev;
-        state.entries = await listDirectory(
-          state.currentPath,
-          state.sortOrder,
-          state.sortDirection,
-          state.filespecFilter
-        );
-        state.selectedIndex = 0;
+        await reloadEntries();
         refreshUI();
       }
     },
@@ -613,38 +618,11 @@ async function main() {
     },
 
     onBranchMode: async () => {
-      if (state.listingMode === 'branch') {
-        // Toggle off
-        await loadDirectory(state.currentPath);
-      } else {
-        state.listingMode = 'branch';
-        state.branchBasePath = state.currentPath;
-        state.entries = await listDirectoryRecursive(
-          state.currentPath,
-          state.sortOrder,
-          state.sortDirection,
-          state.filespecFilter
-        );
-        state.selectedIndex = 0;
-        refreshUI();
-      }
+      await toggleRecursiveMode('branch', state.currentPath);
     },
 
     onShowallMode: async () => {
-      if (state.listingMode === 'showall') {
-        await loadDirectory(state.currentPath);
-      } else {
-        state.listingMode = 'showall';
-        state.branchBasePath = treeState.root.path;
-        state.entries = await listDirectoryRecursive(
-          treeState.root.path,
-          state.sortOrder,
-          state.sortDirection,
-          state.filespecFilter
-        );
-        state.selectedIndex = 0;
-        refreshUI();
-      }
+      await toggleRecursiveMode('showall', treeState.root.path);
     },
 
     onTagByFilespec: async () => {
