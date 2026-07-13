@@ -140,6 +140,45 @@ export function refreshFlatNodes(state: TreeState): void {
   state.flatNodes = flattenTree(state.root);
 }
 
+/**
+ * Expands every ancestor directory between the tree root and `targetPath`
+ * so a node for `targetPath` exists in the flattened tree and can be
+ * selected/highlighted there.
+ *
+ * Without this, jumping straight to a path whose ancestors were never
+ * individually expanded — e.g. exiting branch/showall mode via `\`, which
+ * can land on a directory several levels below anything the tree has ever
+ * expanded — leaves the tree pane's selection on whatever node it last had:
+ * refreshFlatNodes()/TreePane.refresh() can only select a node that's
+ * already present in flatNodes, and this is what puts it there.
+ */
+export async function expandTreeToPath(
+  state: TreeState,
+  targetPath: string
+): Promise<void> {
+  const root = state.root;
+  if (targetPath === root.path) return;
+
+  const relative = path.relative(root.path, targetPath);
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+    return; // targetPath isn't under the tree's root — nothing to expand
+  }
+
+  if (root.hasSubdirs && !root.expanded) {
+    await expandNode(root);
+  }
+
+  let current = root;
+  for (const segment of relative.split(path.sep).filter(Boolean)) {
+    const child = current.children.find((c) => c.name === segment);
+    if (!child) return; // tree doesn't have this segment; nothing more to expand
+    if (child.hasSubdirs && !child.expanded) {
+      await expandNode(child);
+    }
+    current = child;
+  }
+}
+
 export async function deepDive(node: TreeNode): Promise<TreeNode> {
   if (!node.hasSubdirs) return node;
   if (!node.expanded) {
