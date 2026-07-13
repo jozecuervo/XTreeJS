@@ -18,6 +18,8 @@ The format is based on Keep a Changelog and follows semantic versioning.
 - Bumped the `bun`/`bun-types` devDependency pin from `^1.2.0` to `^1.3.8` to match the `engines`/CI requirement.
 - Release workflow now also runs the typecheck step, matching CI.
 - Downsized the README screenshot from a 3424px-wide Retina capture to 1440px (1.5M -> 512K) with no visible quality loss at its displayed width.
+- DRY pass across `src/`: extracted shared helpers for FileEntry construction (`fs/list.ts`), viewFile* error handling (`fs/view.ts`), directory re-listing and the copy/move/delete result-handling tail (`index.ts`), and branch/showall mode toggling (`index.ts`). No behavior change.
+- `setupInput` now takes `TreePane` directly instead of `index.ts` smuggling the raw widget through `(screen as any)._treeWidget`; the 7 call sites that re-derived the selected tree index now call `TreePane.getSelectedIndex()`.
 
 ### Fixed
 
