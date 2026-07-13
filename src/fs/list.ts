@@ -13,6 +13,27 @@ export interface FileEntry {
   mtime: Date;
 }
 
+/**
+ * Stats `fullPath` and builds a FileEntry for it, or returns null if it
+ * can't be stat'd (e.g. a race with deletion, a broken symlink target).
+ */
+async function toFileEntry(fullPath: string, name: string): Promise<FileEntry | null> {
+  try {
+    const stat = await fs.lstat(fullPath);
+    return {
+      name,
+      path: fullPath,
+      isDirectory: stat.isDirectory(),
+      isSymlink: stat.isSymbolicLink(),
+      isExecutable: !stat.isDirectory() && (stat.mode & 0o111) !== 0,
+      size: stat.size,
+      mtime: stat.mtime,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function listWithFd(dirPath: string): Promise<FileEntry[]> {
   try {
     const result =
@@ -24,21 +45,8 @@ async function listWithFd(dirPath: string): Promise<FileEntry[]> {
       const fullPath = line.startsWith('/') ? line : path.resolve(dirPath, line);
       // Skip the directory itself
       if (path.resolve(fullPath) === path.resolve(dirPath)) continue;
-      try {
-        const stat = await fs.lstat(fullPath);
-        entries.push({
-          name: path.basename(fullPath),
-          path: fullPath,
-          isDirectory: stat.isDirectory(),
-          isSymlink: stat.isSymbolicLink(),
-          isExecutable:
-            !stat.isDirectory() && (stat.mode & 0o111) !== 0,
-          size: stat.size,
-          mtime: stat.mtime,
-        });
-      } catch {
-        // Skip entries we can't stat
-      }
+      const entry = await toFileEntry(fullPath, path.basename(fullPath));
+      if (entry) entries.push(entry);
     }
     return entries;
   } catch {
@@ -53,21 +61,8 @@ async function listWithReaddir(dirPath: string): Promise<FileEntry[]> {
 
     for (const name of names) {
       const fullPath = path.join(dirPath, name);
-      try {
-        const stat = await fs.lstat(fullPath);
-        entries.push({
-          name,
-          path: fullPath,
-          isDirectory: stat.isDirectory(),
-          isSymlink: stat.isSymbolicLink(),
-          isExecutable:
-            !stat.isDirectory() && (stat.mode & 0o111) !== 0,
-          size: stat.size,
-          mtime: stat.mtime,
-        });
-      } catch {
-        // Skip entries we can't stat
-      }
+      const entry = await toFileEntry(fullPath, name);
+      if (entry) entries.push(entry);
     }
     return entries;
   } catch {
@@ -180,24 +175,12 @@ export async function listDirectoryRecursive(
       const names = await fs.readdir(dir);
       for (const name of names) {
         const fullPath = path.join(dir, name);
-        try {
-          const stat = await fs.lstat(fullPath);
-          if (stat.isDirectory()) {
-            await walk(fullPath);
-          } else {
-            const relativeName = path.relative(dirPath, fullPath);
-            entries.push({
-              name: relativeName,
-              path: fullPath,
-              isDirectory: false,
-              isSymlink: stat.isSymbolicLink(),
-              isExecutable: (stat.mode & 0o111) !== 0,
-              size: stat.size,
-              mtime: stat.mtime,
-            });
-          }
-        } catch {
-          // Skip entries we can't stat
+        const entry = await toFileEntry(fullPath, path.relative(dirPath, fullPath));
+        if (!entry) continue;
+        if (entry.isDirectory) {
+          await walk(fullPath);
+        } else {
+          entries.push(entry);
         }
       }
     } catch {
