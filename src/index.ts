@@ -54,9 +54,6 @@ async function main() {
 
   const statsPane = createStatsPane(screen);
 
-  // Store tree widget reference for input handler
-  (screen as any)._treeWidget = treePane.widget;
-
   // Viewer pane (created lazily on first use)
   const viewerPane = createViewerPane(screen, state, () => {
     // On viewer exit: restore normal mode
@@ -173,7 +170,7 @@ async function main() {
   }
 
   // Set up input handling
-  setupInput(screen, state, treeState, {
+  setupInput(screen, state, treeState, treePane, {
     onNavigate: async (navPath: string) => {
       await loadDirectory(navPath);
       // Expand every ancestor down to navPath so the tree has a node for it
@@ -539,8 +536,7 @@ async function main() {
     },
 
     onDeepDive: async () => {
-      const treeWidget = (screen as any)._treeWidget;
-      const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
+      const idx = treePane.getSelectedIndex();
       const node = treeState.flatNodes[idx];
       if (!node) return;
       const target = await deepDive(node);
@@ -548,19 +544,18 @@ async function main() {
       await loadDirectory(target.path);
       // Select the target node in the tree
       const newIdx = treeState.flatNodes.findIndex((n) => n.path === target.path);
-      if (newIdx >= 0 && treeWidget) {
-        treeWidget.select(newIdx);
+      if (newIdx >= 0) {
+        treePane.widget.select(newIdx);
       }
       refreshUI();
       computeTreeStats().catch(() => {}); // fire and forget
     },
 
     onNextSibling: () => {
-      const treeWidget = (screen as any)._treeWidget;
-      const idx = treeWidget ? (treeWidget as any).selected ?? 0 : 0;
+      const idx = treePane.getSelectedIndex();
       const nextIdx = findNextSibling(treeState.flatNodes, idx);
-      if (nextIdx !== idx && treeWidget) {
-        treeWidget.select(nextIdx);
+      if (nextIdx !== idx) {
+        treePane.widget.select(nextIdx);
         const node = treeState.flatNodes[nextIdx];
         if (node) {
           loadDirectory(node.path);
@@ -573,10 +568,7 @@ async function main() {
     },
 
     onTreeRoot: async () => {
-      const treeWidget = (screen as any)._treeWidget;
-      if (treeWidget) {
-        treeWidget.select(0);
-      }
+      treePane.widget.select(0);
       const root = treeState.flatNodes[0];
       if (root) {
         await loadDirectory(root.path);
