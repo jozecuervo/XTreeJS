@@ -11,7 +11,7 @@ The format is based on Keep a Changelog and follows semantic versioning.
 - `ARCHITECTURE.md` documenting the rationale for an off-the-shelf TUI framework and a shell-heavy filesystem layer, including the deliberate no-fallback exception for delete/prune.
 - README screenshot, family-legacy motivation section, and CI/license badges.
 - CI now runs `bunx tsc --noEmit` before the test step.
-- Registered an `xtree` binary (`package.json` `bin` field, `#!/usr/bin/env bun` shebang on `src/index.ts`) so installing the package exposes a directly runnable `xtree` command.
+- Registered an `xtree` binary (`package.json` `bin` field, `#!/usr/bin/env bun` shebang on `src/index.ts`) so installing the package exposes a directly runnable `xtree` command. README documents `bun link` as the no-publish-required way to get it from a local clone.
 
 ### Changed
 

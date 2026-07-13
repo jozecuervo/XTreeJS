@@ -57,8 +57,22 @@ bun test
 bun run src/index.ts
 ```
 
-Installed as a dependency (e.g. `bun add -g xtreejs`), the package also
-registers an `xtree` binary that launches the app directly.
+### Install as a command
+
+From a local clone, `bun link` registers an `xtree` binary (via the
+`bin` field in `package.json`) with no publishing required:
+
+```bash
+bun link
+xtree
+```
+
+This drops a symlink at `~/.bun/bin/xtree` pointing back at this
+repo's `src/index.ts`. Make sure `~/.bun/bin` is on your `PATH` (the
+Bun installer usually adds it to your shell profile) — if `xtree`
+isn't found after linking, add `export PATH="$HOME/.bun/bin:$PATH"`
+to your `~/.zshrc` or `~/.bashrc` and restart your shell. `bun unlink`
+reverses it.
 
 ## Test Suite
 
