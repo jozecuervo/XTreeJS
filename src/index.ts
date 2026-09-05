@@ -39,8 +39,16 @@ import { setupInput } from './tui/input.js';
 import { showPrompt, showConfirm, showAttributes } from './tui/prompt.js';
 import { showHelp, showQuickRef } from './tui/help-pane.js';
 import { Defaults } from './config/defaults.js';
+import { runDedupeCommand } from './cli/dedupe-cli.js';
 
 async function main() {
+  // Non-interactive subcommands bypass the TUI entirely.
+  const args = process.argv.slice(2);
+  if (args[0] === 'dedupe') {
+    const code = await runDedupeCommand(args.slice(1));
+    process.exit(code);
+  }
+
   // Detect available tools first
   await detectTools();
 
