@@ -6,6 +6,7 @@ import {
   scanTree,
   compareManifests,
   isRedundant,
+  formatComparisonLines,
   planMerge,
   executeMergePlan,
   isJunkFile,
@@ -125,6 +126,38 @@ describe('compareManifests', () => {
     const cmp = compareManifests(a, b);
     expect(isRedundant(cmp)).toBe(true); // nothing in A is missing from B
     expect(cmp.onlyInB).toEqual(['extra.txt']);
+  });
+});
+
+describe('formatComparisonLines', () => {
+  test('reports redundancy verdict for a pure subset', async () => {
+    await write(A_DIR, 'shared.txt', 'same');
+    await write(B_DIR, 'shared.txt', 'same');
+    await write(B_DIR, 'extra.txt', 'more content');
+    const cmp = compareManifests(await scanTree(A_DIR), await scanTree(B_DIR));
+    const lines = formatComparisonLines('A', 'B', cmp).join('\n');
+    expect(lines).toContain('identical: 1');
+    expect(lines).toContain('only in B: 1');
+    expect(lines).toContain('extra.txt');
+    expect(lines).toContain('A is a redundant subset of B -- safe to discard A.');
+  });
+
+  test('warns against discarding when A has unique content', async () => {
+    await write(A_DIR, 'only-a.txt', 'a content');
+    await write(B_DIR, 'only-b.txt', 'b content');
+    const cmp = compareManifests(await scanTree(A_DIR), await scanTree(B_DIR));
+    const lines = formatComparisonLines('A', 'B', cmp).join('\n');
+    expect(lines).toContain('has content not present in');
+    expect(lines).not.toContain('safe to discard');
+  });
+
+  test('surfaces conflicts explicitly', async () => {
+    await write(A_DIR, 'notes.txt', 'version one');
+    await write(B_DIR, 'notes.txt', 'version two');
+    const cmp = compareManifests(await scanTree(A_DIR), await scanTree(B_DIR));
+    const lines = formatComparisonLines('A', 'B', cmp).join('\n');
+    expect(lines).toContain('conflicts (same path, different content): 1');
+    expect(lines).toContain('notes.txt');
   });
 });
 

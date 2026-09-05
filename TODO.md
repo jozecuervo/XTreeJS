@@ -4,7 +4,7 @@ A modern revival of the classic DOS-era XTree file manager (1985-1995), built wi
 
 Updated based on the original XTree / XTreePro Gold / XTreeGold manual reference.
 
-**Test suite:** 172 tests passing
+**Test suite:** 175 tests passing
 **Planning:** Strategic milestones live in `ROADMAP.md`; this file tracks implementation tasks.
 
 ---
@@ -146,8 +146,9 @@ Grew out of a real cleanup job: multiple old backup copies of a folder tree wher
 
 - [x] **Core scan/compare/merge-plan logic** (`src/fs/dedupe.ts`) -- `scanTree`, `compareManifests`, `isRedundant`, `planMerge`, `executeMergePlan`
 - [x] **Non-interactive CLI** -- `xtree dedupe compare <a> <b>` and `xtree dedupe merge <dest> <src...>` (`src/cli/dedupe-cli.ts`), usable in scripts without the TUI
-- [ ] **TUI integration** -- tag two directories and trigger compare/merge from within the app (prompt for a second path, show a results pane) instead of only via CLI
-- [ ] **Progress feedback for large trees** -- hashing thousands of files can take a while; report progress rather than appearing to hang
+- [x] **TUI compare (dry run, read-only)** -- Ctrl+D on a selected directory prompts for a second path, hashes both trees, and shows the comparison in a scrollable report pane (`src/tui/dedupe-pane.ts`). Never writes anything.
+- [ ] **TUI merge (write path)** -- deliberately not wired up yet; the dry-run compare shipped first so merge behavior (dest prompt, conflict handling, confirmation) can be designed and reviewed before anything in the TUI writes files
+- [ ] **Progress feedback for large trees** -- hashing thousands of files can take a while; the compare pane currently shows only a static "scanning" message, not incremental progress
 - [ ] **Merge conflict resolution UI** -- browse `(CONFLICT-<source>)` pairs side by side and pick one interactively, instead of leaving both for manual cleanup
 
 ### Platform & Display

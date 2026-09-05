@@ -98,6 +98,31 @@ export function isRedundant(comparison: TreeComparison): boolean {
   return comparison.onlyInA.length === 0 && comparison.conflicts.length === 0;
 }
 
+// Shared by the CLI and the TUI report pane so both surfaces describe a
+// comparison identically.
+export function formatComparisonLines(
+  labelA: string,
+  labelB: string,
+  cmp: TreeComparison
+): string[] {
+  const lines: string[] = [];
+  lines.push(`${labelA}  vs  ${labelB}`);
+  lines.push(`  identical: ${cmp.identical.length}`);
+  lines.push(`  only in ${labelA}: ${cmp.onlyInA.length}`);
+  for (const rel of cmp.onlyInA) lines.push(`    ${rel}`);
+  lines.push(`  only in ${labelB}: ${cmp.onlyInB.length}`);
+  for (const rel of cmp.onlyInB) lines.push(`    ${rel}`);
+  lines.push(`  conflicts (same path, different content): ${cmp.conflicts.length}`);
+  for (const rel of cmp.conflicts) lines.push(`    ${rel}`);
+  lines.push('');
+  lines.push(
+    isRedundant(cmp)
+      ? `${labelA} is a redundant subset of ${labelB} -- safe to discard ${labelA}.`
+      : `${labelA} has content not present in ${labelB} -- do not discard without reviewing the differences above.`
+  );
+  return lines;
+}
+
 export interface MergeAction {
   type: 'copy' | 'conflict-copy';
   relPath: string;

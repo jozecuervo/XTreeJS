@@ -7,6 +7,7 @@ import {
   scanTree,
   compareManifests,
   isRedundant,
+  formatComparisonLines,
   planMerge,
   executeMergePlan,
 } from '../fs/dedupe.js';
@@ -25,23 +26,6 @@ const USAGE = `Usage:
       version is written to <destDir> with a "(CONFLICT-<source>)" suffix
       for manual review. Sources are left untouched.`;
 
-function printComparison(dirA: string, dirB: string, cmp: ReturnType<typeof compareManifests>): void {
-  console.log(`${dirA}  vs  ${dirB}`);
-  console.log(`  identical: ${cmp.identical.length}`);
-  console.log(`  only in ${dirA}: ${cmp.onlyInA.length}`);
-  for (const rel of cmp.onlyInA) console.log(`    ${rel}`);
-  console.log(`  only in ${dirB}: ${cmp.onlyInB.length}`);
-  for (const rel of cmp.onlyInB) console.log(`    ${rel}`);
-  console.log(`  conflicts (same path, different content): ${cmp.conflicts.length}`);
-  for (const rel of cmp.conflicts) console.log(`    ${rel}`);
-  console.log();
-  console.log(
-    isRedundant(cmp)
-      ? `${dirA} is a redundant subset of ${dirB} -- safe to discard ${dirA}.`
-      : `${dirA} has content not present in ${dirB} -- do not discard without reviewing the differences above.`
-  );
-}
-
 async function runCompare(args: string[]): Promise<number> {
   const [dirA, dirB] = args;
   if (!dirA || !dirB) {
@@ -51,7 +35,7 @@ async function runCompare(args: string[]): Promise<number> {
   const a = await scanTree(path.resolve(dirA));
   const b = await scanTree(path.resolve(dirB));
   const cmp = compareManifests(a, b);
-  printComparison(dirA, dirB, cmp);
+  for (const line of formatComparisonLines(dirA, dirB, cmp)) console.log(line);
   return isRedundant(cmp) ? 0 : 1;
 }
 
